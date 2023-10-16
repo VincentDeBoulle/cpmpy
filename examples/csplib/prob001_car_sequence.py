@@ -16,6 +16,8 @@ Data format compatible with both variations of model (with and without block con
 Model was created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import sys
+
+from prettytable import PrettyTable
 sys.path.append('../cpmpy')
 
 from cpmpy import *
@@ -80,6 +82,8 @@ if __name__ == "__main__":
     
     problem_names = [problem['name'] for problem in data]
 
+    tablesp = PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time'])
+    
     for name in problem_names:
         # argument parsing
         url = "https://raw.githubusercontent.com/CPMpy/cpmpy/master/examples/csplib/prob001_car_sequence.json"
@@ -104,19 +108,30 @@ if __name__ == "__main__":
         problem_params = _get_instance(problem_data, args.instance)
         print("Problem name:", problem_params["name"])
 
+        def create_model():
+            return car_sequence(**problem_params)
+        
+        model_creation_time = timeit.timeit(create_model, number = 1)
+
         def run_code():
             model, (slots, setup) = car_sequence(**problem_params)
-            
-            if model.solve(time_limit=20):
-                print("Class", "Options req.", sep="\t")
-                """for i in range(len(slots)):
-                    print(slots.value()[i],
-                        setup.value()[i].astype(int),
-                        sep="\t\t")"""
+            ret, transform_time, solve_time = model.solve(time_limit=20)
+            if ret:
+                print("Solved this problem")
+                return transform_time, solve_time
+                
             elif model.status().runtime > 19:
                 print("This problem passes the time limit")
+                return 'Passes limit', 'Passes limit'
             else:
                 print("Model is unsatisfiable!")
+                return 'Unsatisfiable', 'Unsatisfiable'
         
-        execution_time = timeit.timeit(run_code, number=5)
-        print("Execution Time:", execution_time, "seconds\n")
+        execution_time = timeit.timeit(run_code, number=1)
+        transform_time, solve_time = run_code()
+        
+        tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time])
+
+        with open("cpmpy/timing_results/car_sequence.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
