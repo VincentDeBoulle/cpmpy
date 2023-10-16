@@ -15,9 +15,12 @@ Based on the Minizinc model car.mzn.
 Data format compatible with both variations of model (with and without block constraints)
 Model was created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
+sys.path.append('../cpmpy')
 
-import cpmpy
 from cpmpy import *
+import json
+import timeit
 
 def car_sequence(n_cars, n_options, n_classes, n_cars_p_class, options, capacity=None, blocks=None, **kwargs):
     # build model
@@ -71,37 +74,49 @@ if __name__ == "__main__":
     import json
     import requests
 
-    # argument parsing
-    url = "https://raw.githubusercontent.com/CPMpy/cpmpy/master/examples/csplib/prob001_car_sequence.json"
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    #parser.add_argument('-instance', nargs='?', default="Problem 4/72  (Regin & Puget #1)", help="Name of the problem instance found in file 'filename'")
-    parser.add_argument('-instance', nargs='?', default="Problem 60-04", help="Name of the problem instance found in file 'filename'")
-    parser.add_argument('-filename', nargs='?', default=url, help="File containing problem instances, can be local file or url")
-    parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
+    # Get all problem names out of the JSON (future proof if json changes)
+    with open('examples/csplib/prob001_car_sequence.json', 'r') as json_file:
+        data = json.load(json_file)
+    
+    problem_names = [problem['name'] for problem in data]
 
-    args = parser.parse_args()
+    for name in problem_names:
+        # argument parsing
+        url = "https://raw.githubusercontent.com/CPMpy/cpmpy/master/examples/csplib/prob001_car_sequence.json"
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        #parser.add_argument('-instance', nargs='?', default="Problem 4/72  (Regin & Puget #1)", help="Name of the problem instance found in file 'filename'")
+        parser.add_argument('-instance', nargs='?', default=name, help="Name of the problem instance found in file 'filename'")
+        parser.add_argument('-filename', nargs='?', default=url, help="File containing problem instances, can be local file or url")
+        parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
 
-    if "http" in args.filename:
-        problem_data = requests.get(args.filename).json()
-    else:
-        with open(args.filename, "r") as f:
-            problem_data = json.load(f)
+        args = parser.parse_args()
 
-    if args.list_instances:
-        _print_instances(problem_data)
-        exit(0)
+        if "http" in args.filename:
+            problem_data = requests.get(args.filename).json()
+        else:
+            with open(args.filename, "r") as f:
+                problem_data = json.load(f)
 
-    problem_params = _get_instance(problem_data, args.instance)
-    print("Problem name:", problem_params["name"])
+        if args.list_instances:
+            _print_instances(problem_data)
+            exit(0)
 
-    model, (slots, setup) = car_sequence(**problem_params)
+        problem_params = _get_instance(problem_data, args.instance)
+        print("Problem name:", problem_params["name"])
 
-    # solve the model
-    if model.solve():
-        print("Class", "Options req.", sep="\t")
-        for i in range(len(slots)):
-            print(slots.value()[i],
-                  setup.value()[i].astype(int),
-                  sep="\t\t")
-    else:
-        raise ValueError("Model is unsatisfiable!")
+        def run_code():
+            model, (slots, setup) = car_sequence(**problem_params)
+            
+            if model.solve(time_limit=20):
+                print("Class", "Options req.", sep="\t")
+                """for i in range(len(slots)):
+                    print(slots.value()[i],
+                        setup.value()[i].astype(int),
+                        sep="\t\t")"""
+            elif model.status().runtime > 19:
+                print("This problem passes the time limit")
+            else:
+                print("Model is unsatisfiable!")
+        
+        execution_time = timeit.timeit(run_code, number=5)
+        print("Execution Time:", execution_time, "seconds\n")

@@ -29,6 +29,7 @@
 """
 import copy
 import warnings
+import timeit
 
 import numpy as np
 from .expressions.core import Expression
@@ -173,18 +174,22 @@ class Model(object):
                 - solution_limit: stop after this many solutions (default: None)
 
             Returns: number of solutions found
-        """
+        """        
+        start_solver_time = timeit.default_timer()
         if isinstance(solver, SolverInterface):
             # for advanced use, call its constructor with this model
             s = solver(self)
         else:
             s = SolverLookup.get(solver, self)
-
+        transform_time = timeit.default_timer() - start_solver_time
+       
         # call solver
+        start_solve_time = timeit.default_timer()
         ret = s.solveAll(display=display,time_limit=time_limit,solution_limit=solution_limit, call_from_model=True)
+        solve_time = timeit.default_timer() - start_solve_time
         # store CPMpy status (s object has no further use)
         self.cpm_status = s.status()
-        return ret
+        return ret, transform_time, solve_time
 
     def status(self):
         """
