@@ -3,6 +3,10 @@
 The 'frietkot' problem; invented by Tias to explain SAT and SAT solving
 http://homepages.vub.ac.be/~tiasguns/frietkot/
 """
+import sys
+
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 
 # Construct the model.
