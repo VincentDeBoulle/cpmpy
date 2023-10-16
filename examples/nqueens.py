@@ -9,10 +9,15 @@ The N-Queens problem is the problem of placing N queens on an N x N chess
 board such that no two queens are attacking each other. A queen is attacking
 another if it they are on the same row, same column, or same diagonal.
 """
+import sys
+
+# Use the local cpmpy files
+sys.path.append('../cpmpy')
 
 # load the libraries
 import numpy as np
 from cpmpy import *
+import timeit
 
 def nqueens(N):
     # Variables (one per row)
