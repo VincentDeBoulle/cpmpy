@@ -328,6 +328,7 @@ class CPM_ortools(SolverInterface):
 
         :return: list of Expression
         """
+        print('Ortools.py: START transform-function')
         cpm_cons = toplevel_list(cpm_expr)
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
