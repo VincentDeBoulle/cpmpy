@@ -18,8 +18,13 @@ See also my CPMpy page: http://hakank.org/cpmpy/
 Modified by Ignace Bleukx
 """
 import sys
+sys.path.append('../cpmpy')
+
+# load the libraries
 import numpy as np
 from cpmpy import *
+import timeit
+from prettytable import PrettyTable
 
 def n_queens(n=16):
 
@@ -45,15 +50,35 @@ def print_sol(queens):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-n", type=int, default=16, help="Number of queens")
-    parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
+    tablesp = PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time (100 instances)', 'Execution Time'])
 
-    args = parser.parse_args()
+    for nb in range(5, 14):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-n", type=int, default=nb, help="Number of queens")
+        parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
 
-    model, (queens,) = n_queens(args.n)
+        args = parser.parse_args()
 
-    n_sols = model.solveAll(solution_limit=args.solution_limit,
-                            display = lambda : print_sol(queens))
+        def create_model():
+            return n_queens(args.n)
+        
+        # Measure the model creation time
+        model_creation_time = timeit.timeit(create_model, number=100)
 
-    print("num_solutions:", n_sols)
+        # Define a function to run the code
+        def run_code():
+            model, (queens,) = n_queens(args.n)
+            #n_sols = model.solveAll(solution_limit=args.solution_limit, display=lambda: print_sol(queens))
+            print("queens:{}".format(args.n))
+            n_sols = model.solveAll(solution_limit=args.solution_limit)
+            return n_sols
+
+        # Measure the execution time
+        execution_time = timeit.timeit(run_code, number=1)
+
+        n_sols = run_code()
+        tablesp.add_row([nb, n_sols, model_creation_time, execution_time])
+
+        with open("cpmpy/timing_results/n_queens_times.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
