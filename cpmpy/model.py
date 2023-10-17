@@ -190,11 +190,12 @@ class Model(object):
        
         # call solver
         start_solve_time = timeit.default_timer()
-        ret = s.solveAll(display=display,time_limit=time_limit,solution_limit=solution_limit, call_from_model=True)
+        ret, num_branches = s.solveAll(display=display,time_limit=time_limit,solution_limit=solution_limit, call_from_model=True)
         solve_time = timeit.default_timer() - start_solve_time
         # store CPMpy status (s object has no further use)
         self.cpm_status = s.status()
-        return ret, transform_time, solve_time
+
+        return ret, transform_time, solve_time, num_branches
 
     def status(self):
         """

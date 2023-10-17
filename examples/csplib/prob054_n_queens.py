@@ -50,7 +50,7 @@ def print_sol(queens):
 if __name__ == "__main__":
     import argparse
 
-    tablesp = PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time'])
+    tablesp = PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
     for nb in range(5, 14):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
             return n_queens(args.n)
         
         # Measure the model creation time
-        model_creation_time = timeit.timeit(create_model, number = 1)
+        model_creation_time = timeit.timeit(create_model, number = 10)/10
 
         # Define a function to run the code
         def run_code():
@@ -74,10 +74,10 @@ if __name__ == "__main__":
             
 
         # Measure the execution time
-        execution_time = timeit.timeit(run_code, number=1)
+        execution_time = timeit.timeit(run_code, number=10)/10
 
-        n_sols, transform_time, solve_time = run_code()
-        tablesp.add_row([nb, n_sols, model_creation_time, transform_time, solve_time, execution_time])
+        n_sols, transform_time, solve_time, num_branches = run_code()
+        tablesp.add_row([nb, n_sols, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/n_queens_times.txt", "w") as f:
             f.write(str(tablesp))

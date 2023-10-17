@@ -224,7 +224,7 @@ class CPM_ortools(SolverInterface):
 
         cb = OrtSolutionPrinter(self, display=display, solution_limit=solution_limit)
         self.solve(enumerate_all_solutions=True, solution_callback=cb, time_limit=time_limit, **kwargs)
-        return cb.solution_count()
+        return cb.solution_count(), self.ort_solver.NumBranches()
 
 
     def solver_var(self, cpm_var):
