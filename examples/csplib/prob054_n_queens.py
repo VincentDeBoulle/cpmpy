@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     tablesp = PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
-    for nb in range(5, 14):
+    for nb in range(5, 6):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Number of queens")
         parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
@@ -63,7 +63,7 @@ if __name__ == "__main__":
             return n_queens(args.n)
         
         # Measure the model creation time
-        model_creation_time = timeit.timeit(create_model, number = 10)/10
+        model_creation_time = timeit.timeit(create_model, number = 1)
 
         # Define a function to run the code
         def run_code():
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             
 
         # Measure the execution time
-        execution_time = timeit.timeit(run_code, number=10)/10
+        execution_time = timeit.timeit(run_code, number=1)
 
         n_sols, transform_time, solve_time, num_branches = run_code()
         tablesp.add_row([nb, n_sols, model_creation_time, transform_time, solve_time, execution_time, num_branches])

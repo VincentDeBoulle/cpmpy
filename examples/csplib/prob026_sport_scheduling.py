@@ -6,10 +6,17 @@ Model created by Ignace Bleukx
 """
 import pandas as pd
 
+import sys
+
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
 
 import numpy as np
+import timeit
 
 def sport_scheduling(n_teams):
 
@@ -45,25 +52,33 @@ def sport_scheduling(n_teams):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-n_teams", type=int, default=8, help="Number of teams to schedule")
+    tablesp = PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
 
-    args = parser.parse_args()
+    for nb in range(2,21,2):
+        print('\n number: {}'.format(nb))
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-n_teams", type=int, default=nb, help="Number of teams to schedule")
 
-    n_teams = args.n_teams
-    n_weeks, n_periods, n_matches = n_teams - 1, n_teams // 2, (n_teams - 1) * n_teams // 2
+        args = parser.parse_args()
 
-    model, (home, away) = sport_scheduling(n_teams)
+        n_teams = args.n_teams
+        n_weeks, n_periods, n_matches = n_teams - 1, n_teams // 2, (n_teams - 1) * n_teams // 2
 
-    if model.solve():
-        import pandas as pd
-        home, away = home.value(), away.value()
-        matches = [[f"{h} v {a}" for h,a in zip(home[w], away[w])] for w in range(n_weeks)]
-        print(matches)
-        df = pd.DataFrame(matches,
-                          index=[f"Week {w+1}" for w in range(n_weeks)],
-                          columns=[f"Period {p+1}" for p in range(n_periods)])
-        print(df.T.to_string(col_space=8, justify="center"))
+        def create_model():
+            return sport_scheduling(n_teams)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
 
-    else:
-        raise ValueError("Model is unsatisfiable")
+        def run_code():
+            model, (home, away) = create_model()
+            ret, transform_time, solve_time, num_branches = model.solve(time_limit=30)
+            return transform_time, solve_time, num_branches
+        
+        execution_time = timeit.timeit(run_code, number=1)
+        transform_time, solve_time, num_branches = run_code()
+
+        tablesp.add_row([nb, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/sport_scheduling.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")

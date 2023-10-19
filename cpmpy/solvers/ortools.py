@@ -203,7 +203,7 @@ class CPM_ortools(SolverInterface):
             if self.has_objective():
                 self.objective_value_ = self.ort_solver.ObjectiveValue()
 
-        return has_sol
+        return has_sol, self.ort_solver.NumBranches()
 
     def solveAll(self, display=None, time_limit=None, solution_limit=None, call_from_model=False, **kwargs):
         """
@@ -328,7 +328,6 @@ class CPM_ortools(SolverInterface):
 
         :return: list of Expression
         """
-        print('Ortools.py: START transform-function')
         cpm_cons = toplevel_list(cpm_expr)
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)

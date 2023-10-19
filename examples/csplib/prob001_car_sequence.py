@@ -82,7 +82,7 @@ if __name__ == "__main__":
     
     problem_names = [problem['name'] for problem in data]
 
-    tablesp = PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time'])
+    tablesp = PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
     
     for name in problem_names:
         # argument parsing
@@ -115,22 +115,22 @@ if __name__ == "__main__":
 
         def run_code():
             model, (slots, setup) = car_sequence(**problem_params)
-            ret, transform_time, solve_time = model.solve(time_limit=20)
+            ret, transform_time, solve_time, num_branches = model.solve(time_limit=20)
             if ret:
                 print("Solved this problem")
-                return transform_time, solve_time
+                return transform_time, solve_time, num_branches
                 
             elif model.status().runtime > 19:
                 print("This problem passes the time limit")
-                return 'Passes limit', 'Passes limit'
+                return 'Passes limit', 'Passes limit', 'Passes limit'
             else:
                 print("Model is unsatisfiable!")
-                return 'Unsatisfiable', 'Unsatisfiable'
+                return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
         
         execution_time = timeit.timeit(run_code, number=1)
-        transform_time, solve_time = run_code()
+        transform_time, solve_time, num_branches = run_code()
         
-        tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time])
+        tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/car_sequence.txt", "w") as f:
             f.write(str(tablesp))
