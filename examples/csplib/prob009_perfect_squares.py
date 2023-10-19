@@ -19,8 +19,13 @@ Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import sys
 import numpy as np
+from prettytable import PrettyTable
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
+import json
+import timeit
 
 
 def perfect_squares(base, sides, **kwargs):
@@ -71,41 +76,62 @@ if __name__ == "__main__":
     import json
     import requests
 
+    # Get all problem names out of the JSON (future proof if json changes)
+    with open('examples/csplib/prob009_perfect_squares.json', 'r') as json_file:
+        data = json.load(json_file)
+    
+    problem_names = [problem['name'] for problem in data]
+
+    tablesp = PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    
+    for name in problem_names:
     # argument parsing
-    url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob009_perfect_squares.json"
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-instance', nargs='?', default="problem7", help="Name of the problem instance found in file 'filename'")
-    parser.add_argument('-filename', nargs='?', default=url, help="File containing problem instances, can be local file or url")
-    parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
+        url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob009_perfect_squares.json"
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument('-instance', nargs='?', default=name, help="Name of the problem instance found in file 'filename'")
+        parser.add_argument('-filename', nargs='?', default=url, help="File containing problem instances, can be local file or url")
+        parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
 
-    args = parser.parse_args()
+        args = parser.parse_args()
 
-    if "http" in args.filename:
-        problem_data = requests.get(args.filename).json()
-    else:
-        with open(args.filename, "r") as f:
-            problem_data = json.load(f)
+        if "http" in args.filename:
+            problem_data = requests.get(args.filename).json()
+        else:
+            with open(args.filename, "r") as f:
+                problem_data = json.load(f)
 
-    if args.list_instances:
-        _print_instances(problem_data)
-        exit(0)
+        if args.list_instances:
+            _print_instances(problem_data)
+            exit(0)
 
-    problem_params = _get_instance(problem_data, args.instance)
-    print("Problem name:", problem_params["name"])
+        problem_params = _get_instance(problem_data, args.instance)
+        print("Problem name:", problem_params["name"])
 
-    model, (x_coords, y_coords) = perfect_squares(**problem_params)
+        def create_model():
+            return perfect_squares(**problem_params)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
 
-    if model.solve():
-        np.set_printoptions(linewidth=problem_params['base']*5, threshold=np.inf)
+        def run_code():
+            model, (x_coords, y_coords) = create_model()
+            ret, transform_time, solve_time, num_branches = model.solve(time_limit=20)
+            if ret:
+                print("Solved this problem")
+                return transform_time, solve_time, num_branches
+                
+            elif model.status().runtime > 19:
+                print("This problem passes the time limit")
+                return 'Passes limit', 'Passes limit', 'Passes limit'
+            else:
+                print("Model is unsatisfiable!")
+                return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
 
-        base, sides = problem_params['base'], problem_params['sides']
-        x_coords, y_coords = x_coords.value(), y_coords.value()
-        big_square = np.zeros(dtype=str, shape=(base, base))
-        for i, (x, y) in enumerate(zip(x_coords, y_coords)):
-            big_square[x:x + sides[i], y:y + sides[i]] = chr(i+65)
+        
+        execution_time = timeit.timeit(run_code, number=1)
+        transform_time, solve_time, num_branches = run_code()
+        
+        tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
-        print(np.array2string(big_square,formatter={'str_kind': lambda v: v}))
-
-    else:
-        raise ValueError(f"Problem is unsatisfiable")
-
+        with open("cpmpy/timing_results/perfect_squares.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
