@@ -14,8 +14,12 @@ import json
 
 import numpy as np
 
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
+import timeit
+from prettytable import PrettyTable
 
 def vessel_loading(deck_width, deck_length, n_containers, width, length, classes, separation, **kwargs):
 
@@ -72,38 +76,64 @@ if __name__ == "__main__":
     import json
     import requests
 
-    # argument parsing
-    url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob008_vessel_loading.json"
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-instance', default="easy", help="Name of the problem instance found in file 'filename'")
-    parser.add_argument('-filename', default=url, help="File containing problem instances, can be local file or url")
-    parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
+    # Get all problem names out of the JSON (future proof if json changes)
+    with open('examples/csplib/prob008_vessel_loading.json', 'r') as json_file:
+        data = json.load(json_file)
+    
+    problem_names = [problem['name'] for problem in data]
 
-    args = parser.parse_args()
+    tablesp = PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    
+    for name in problem_names:
+        # argument parsing
+        url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob008_vessel_loading.json"
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument('-instance', default=name, help="Name of the problem instance found in file 'filename'")
+        parser.add_argument('-filename', default=url, help="File containing problem instances, can be local file or url")
+        parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
 
-    if "http" in args.filename:
-        problem_data = requests.get(args.filename).json()
-    else:
-        with open(args.filename, "r") as f:
-            problem_data = json.load(f)
+        args = parser.parse_args()
 
-    if args.list_instances:
-        _print_instances(problem_data)
-        exit(0)
+        if "http" in args.filename:
+            problem_data = requests.get(args.filename).json()
+        else:
+            with open(args.filename, "r") as f:
+                problem_data = json.load(f)
 
-    problem_params = _get_instance(problem_data, args.instance)
+        if args.list_instances:
+            _print_instances(problem_data)
+            exit(0)
 
-    model, (left, right, top, bottom) = vessel_loading(**problem_params)
+        problem_params = _get_instance(problem_data, args.instance)
+        
+        print("Problem name: ", problem_params["name"])
+        
+        def create_model():
+            return vessel_loading(**problem_params)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
 
-    # solve the model
-    if model.solve():
-        container_map = np.zeros(shape=(problem_params["deck_length"], problem_params["deck_width"]), dtype=int)
-        l, r, t, b = left.value(), right.value(), top.value(), bottom.value()
-        for c in range(problem_params["n_containers"]):
-            container_map[b[c]:t[c], l[c]:r[c]] = c + 1
+        def run_code():
+            model, (left, right, top, bottom) = create_model()
+            ret, transform_time, solve_time, num_branches = model.solve(time_limit=20)
 
-        print("Shipdeck layout (0 means no container in that spot):")
-        print(np.flip(container_map, axis=0))
+            # solve the model
+            if ret:
+                print("Solved this problem")
+                return transform_time, solve_time, num_branches
+                
+            elif model.status().runtime > 19:
+                print("This problem passes the time limit")
+                return 'Passes limit', 'Passes limit', 'Passes limit'
+            else:
+                print("Model is unsatisfiable!")
+                return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
+            
+        execution_time = timeit.timeit(run_code, number=1)
+        transform_time, solve_time, num_branches = run_code()
 
-    else:
-        raise ValueError("Model is unsatisfiable")
+        tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/vessel_loading.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
