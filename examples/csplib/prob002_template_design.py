@@ -19,6 +19,15 @@ cat-food.
 Implementation based on Minizinc model in CSPlib.
 Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
+import timeit
+import json
+from prettytable import PrettyTable
+import requests
+import argparse
+import numpy as np
+
+sys.path.append('../cpmpy')
 
 from cpmpy import *
 
@@ -77,43 +86,62 @@ def _print_instances(data):
     print(df_str)
 
 if __name__ == "__main__":
-    import requests
-    import json
-    import argparse
 
-    import numpy as np
+    with open('examples/csplib/prob002_template_design.json', 'r') as json_file:
+        data = json.load(json_file)
 
-    # argument parsing
-    url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob002_template_design.json"
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-instance', default="catfood2", help="Name of the problem instance found in file 'filename'")
-    parser.add_argument('-filename', default=url, help="File containing problem instances, can be local file or url")
-    parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
+    problem_names = [problem['name'] for problem in data]
 
-    args = parser.parse_args()
+    tablesp = PrettyTable(['Problem instance', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
 
-    if "http" in args.filename:
-        problem_data = requests.get(args.filename).json()
-    else:
-        with open(args.filename, "r") as f:
-            problem_data = json.load(f)
+    for name in problem_names:
+        # argument parsing
+        url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob002_template_design.json"
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument('-instance', default=name, help="Name of the problem instance found in file 'filename'")
+        parser.add_argument('-filename', default=url, help="File containing problem instances, can be local file or url")
+        parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
 
-    if args.list_instances:
-        _print_instances(problem_data)
-        exit(0)
+        args = parser.parse_args()
 
-    problem_params = _get_instance(problem_data, args.instance)
-    print("Problem name:", problem_params["name"])
+        if "http" in args.filename:
+            problem_data = requests.get(args.filename).json()
+        else:
+            with open(args.filename, "r") as f:
+                problem_data = json.load(f)
 
-    model, (production, layout) = template_design(**problem_params)
+        if args.list_instances:
+            _print_instances(problem_data)
+            exit(0)
 
-    # solve model
-    if model.solve(solver="ortools"):
-        np.set_printoptions(linewidth=problem_params['n_var']*5)
-        print("#Pressings \t Layout")
-        for t, l in zip(production.value(), layout.value()):
-            print("{:>10}\t {}".format(t, l))
-        print()
-        print(f"Total pressings: {sum(production).value()}")
-    else:
-        raise ValueError("Model is unsatisfiable")
+        problem_params = _get_instance(problem_data, args.instance)
+        print("Problem name:", problem_params["name"])
+
+        def create_model():
+            return template_design(**problem_params)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
+
+        def run_code():
+            model, (production, layout) = create_model()
+
+            ret, transform_time, solve_time, num_branches = model.solve(time_limit=30)
+            if ret:
+                print("Solved this problem")
+                return transform_time, solve_time, num_branches
+                
+            elif model.status().runtime > 29:
+                print("This problem passes the time limit")
+                return 'Passes limit', 'Passes limit', 'Passes limit'
+            else:
+                print("Model is unsatisfiable!")
+                return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
+
+        execution_time = timeit.timeit(run_code, number=1)
+        transform_time, solve_time, num_branches = run_code()
+        
+        tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/template_design.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
