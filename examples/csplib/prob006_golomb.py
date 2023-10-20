@@ -20,7 +20,11 @@ See also my cpmpy page: http://www.hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
+sys.path.append('../cpmpy')
 
+import timeit
+from prettytable import PrettyTable
 from cpmpy import *
 
 def golomb(size=10):
@@ -50,16 +54,31 @@ def golomb(size=10):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-size", type=int, default=10, help="Size of the ruler")
+    tablesp = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
 
-    size = parser.parse_args().size
+    for sz in range(5, 16):
 
-    model, (marks, ) = golomb(size)
+        parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-size", type=int, default=sz, help="Size of the ruler")
 
-    if model.solve():
-        print(marks.value())
-    else:
-        raise ValueError("Model is unsatisfiable")
+        size = parser.parse_args().size
+        print(size)
 
+        def create_model():
+            return golomb(size)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
+
+        def run_code():
+            model, (marks, ) = create_model()
+            return model.solve()
+
+        execution_time = timeit.timeit(run_code, number=1)
+
+        _, transform_time, solve_time, num_branches = run_code()
+        tablesp.add_row([size, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/golomb.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
 

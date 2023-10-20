@@ -23,7 +23,13 @@ See also my cpmpy page: http://www.hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
 import argparse
+import timeit
+
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
 
 from cpmpy import *
 import numpy as np
@@ -58,16 +64,31 @@ def print_solution(x, diffs):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-length", type=int,help="Length of array, 12 by default", default=12)
-    parser.add_argument("--solution_limit", type=int, help="Number of solutions to find, find all by default", default=0)
+    tablesp = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
 
-    args = parser.parse_args()
+    for lngth in range(5, 16):
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("-length", type=int,help="Length of array, 12 by default", default=lngth)
+        parser.add_argument("--solution_limit", type=int, help="Number of solutions to find, find all by default", default=0)
 
-    model, (x, diffs) = all_interval(args.length)
-    found_n = model.solveAll(solution_limit=args.solution_limit,
-                             display=lambda: print_solution(x, diffs))
-    if found_n == 0:
-        print(f"Fund {found_n} solutions")
-    else:
-        raise ValueError("Problem is unsatisfiable")
+        print(lngth)
+        args = parser.parse_args()
+
+        def create_model():
+            return all_interval(args.length)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
+        
+        def run_code():
+            model, (x, diffs) = create_model()
+            return model.solveAll(solution_limit=args.solution_limit,
+                                display=lambda: print_solution(x, diffs))
+        
+        execution_time = timeit.timeit(run_code, number=1)
+
+        _, transform_time, solve_time, num_branches = run_code()
+        tablesp.add_row([lngth, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/all_interval.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")

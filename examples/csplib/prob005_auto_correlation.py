@@ -6,10 +6,15 @@
     Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import argparse
+import sys
+
+sys.path.append('../cpmpy')
 
 import numpy as np
 
 from cpmpy import *
+import timeit
+from prettytable import PrettyTable
 
 
 def auto_correlation(n=16):
@@ -37,20 +42,30 @@ def PAF(arr, s):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-length", nargs='?', type=int, default=16, help="Length of bitarray")
+    tablsp = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
 
-    length = parser.parse_args().length
 
-    model, (arr,) = auto_correlation(length)
+    for lngth in range(10, 25):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-length", nargs='?', type=int, default=lngth, help="Length of bitarray")
 
-    if model.solve():
-        # print using runlength notation
-        arr = arr.value()
-        pieces = np.split(arr, np.where(arr == -1)[0])
+        length = parser.parse_args().length
+        print(length)
 
-        print("Run length encoding of solution:")
-        print("".join([str(len(p)) for p in pieces if len(p) != 0]))
+        def create_model():
+            return auto_correlation(length)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
 
-    else:
-        raise ValueError("Model is unsatisfiable")
+        def run_code():
+            model, (arr,) = create_model()
+            return model.solve(time_limit=30)
+        
+        execution_time = timeit.timeit(run_code, number=1)
+
+        _, transform_time, solve_time, num_branches = run_code()
+        tablsp.add_row([length, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/auto_correlation.txt", "w") as f:
+            f.write(str(tablsp))
+            f.write("\n")
