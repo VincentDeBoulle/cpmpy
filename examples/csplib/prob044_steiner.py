@@ -14,7 +14,12 @@ The solution contains 7*(7−1)/6=7 triples.
 
 Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
+import timeit
 import numpy as np
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
 
 from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
@@ -53,18 +58,32 @@ def print_sol(sets):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-num_sets", type=int, default=15, help="Number of sets")
-    parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions to find, find all by default")
+    tablsp = PrettyTable(['Number of Sets', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
 
-    args = parser.parse_args()
+    for num in range(3, 16, 3):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-num_sets", type=int, default=15, help="Number of sets")
+        parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions to find, find all by default")
 
-    model, (sets,) = steiner(args.num_sets)
-    n_sol = model.solveAll(solver="pysat:minisat22",
-                           solution_limit=args.solution_limit,
-                           display=lambda : print_sol(sets))
+        args = parser.parse_args()
 
-    if n_sol == 0:
-        raise ValueError("Model is unsatisfiable")
-    else:
-        print(f"Found {n_sol} solutions")
+        print(num)
+        
+        def create_model():
+            return steiner(args.num_sets)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
+
+        def run_code():
+            model, (sets,) = create_model()
+            return model.solveAll(solution_limit=args.solution_limit,
+                                display=lambda : print_sol(sets))
+
+        execution_time = timeit.timeit(run_code, number=1)
+
+        _, transform_time, solve_time, num_branches = run_code()
+        tablsp.add_row([num, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/steiner.txt", "w") as f:
+            f.write(str(tablsp))
+            f.write("\n")

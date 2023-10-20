@@ -17,8 +17,14 @@ See also my cpmpy page: http://hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import timeit
 import numpy as np
 import sys
+
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 
 def costas_array(n=6):
@@ -80,16 +86,33 @@ def print_sol(costas, differences):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-size", type=int, default=6, help="Size of array")
-    parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
+    tablesp = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
 
-    args = parser.parse_args()
 
-    model, (costas, differences) = costas_array(args.size)
-    num_sols = model.solveAll(
-        solution_limit=args.solution_limit,
-        display = lambda: print_sol(costas, differences)
-    )
+    for sz in range(5, 15):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-size", type=int, default=sz, help="Size of array")
+        parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
 
-    print(f"Found {num_sols} solutions")
+        args = parser.parse_args()
+        print(args.size)
+
+        def create_model():
+            return costas_array(args.size)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
+
+        def run_code():
+            model, (costas, differences) = create_model()
+            return model.solveAll(
+                solution_limit=args.solution_limit
+            )
+
+        execution_time = timeit.timeit(run_code, number=1)
+
+        _, transform_time, solve_time, num_branches = run_code()
+        tablesp.add_row([args.size, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/costas_arrays.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
