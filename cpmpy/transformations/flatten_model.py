@@ -111,7 +111,7 @@ def flatten_model(orig_model):
             return Model(*basecons, maximize=newobj)
 
 
-def flatten_constraint(expr):
+def flatten_constraint(expr, cse_expr):
     """
         input is any expression; except is_num(), pure _NumVarImpl,
         or Operator/GlobalConstraint with not is_bool()
@@ -122,6 +122,7 @@ def flatten_constraint(expr):
         TODO, what built-in python error is best?
         RE TODO: we now have custom NotImpl/NotSupported
     """
+    #print(comm_expr)
     from ..expressions.globalconstraints import GlobalConstraint  # avoid circular import
 
     newlist = []
