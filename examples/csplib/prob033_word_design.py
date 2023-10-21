@@ -12,9 +12,12 @@ Each pair of words x and y in S (where x and y may be identical) are such that x
 
 Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
-
-
+import sys
 import numpy as np
+import timeit
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
 
 from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
@@ -55,19 +58,30 @@ def word_design(n=2):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-n_words", type=int, default=24, help="Number of words to find")
+    tablesp = PrettyTable(['Number of words to find', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
-    n = parser.parse_args().n_words
+    for nb in range(10, 30, 2):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-n_words", type=int, default=nb, help="Number of words to find")
 
-    print(f"Attempting to find at most {n} words")
+        n = parser.parse_args().n_words
+        print(n)
 
-    model, (words,) = word_design(n)
+        def create_model():
+            return word_design(n)
+        
+        model_creation_time = timeit.timeit(create_model, number=1)
 
-    if model.solve():
-        map = np.array(["A","C","G","T"])
-        for word in words.value():
-            if np.any(word != 0):
-                print("".join(map[word-1]))
-    else:
-        print("Model is unsatisfiable")
+        def run_code():
+            model, (words,) = create_model()
+            return model.solve()
+        
+        # Measure the execution time
+        execution_time = timeit.timeit(run_code, number=1)
+
+        n_sols, transform_time, solve_time, num_branches = run_code()
+        tablesp.add_row([n, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/word_design.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")        

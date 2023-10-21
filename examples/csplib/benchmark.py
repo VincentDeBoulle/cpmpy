@@ -8,6 +8,7 @@ files = ["examples/csplib/prob001_car_sequence.py",
          "examples/csplib/prob009_perfect_squares.py",
          "examples/csplib/prob019_magic_sequence.py"
          "examples/csplib/prob026_sport_scheduling.py",
+         "examples/csplib/prob033_word_design.py",
          "examples/csplib/prob044_steiner.py",
          "examples/csplib/porb049_number_partitioning.py",
          "examples/csplib/prob050_diamond_free.py",
