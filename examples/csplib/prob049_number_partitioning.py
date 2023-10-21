@@ -13,7 +13,13 @@ Adapted from pycsp3 implementation: https://raw.githubusercontent.com/xcsp3team/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
 import numpy as np
+
+sys.path.append('../cpmpy')
+
+import timeit
+from prettytable import PrettyTable
 from cpmpy import *
 
 def number_partitioning(n=8):
@@ -44,15 +50,30 @@ def number_partitioning(n=8):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-n", type=int, default=8, help="Amount of numbers to partition")
+    tablesp = PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
-    n = parser.parse_args().n
+    for nb in range(10,101,10):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-n", type=int, default=nb, help="Amount of numbers to partition")
 
-    model, (x,y) = number_partitioning(n)
+        n = parser.parse_args().n
+        print(n)
+        
+        def create_model():
+            return number_partitioning(n)
 
-    if model.solve():
-        print(f"x: {x.value()}")
-        print(f"y: {y.value()}")
-    else:
-        raise ValueError("Model is unsatisfiable")
+        model_creation_time = timeit.timeit(create_model, number = 1)    
+
+        def run_code():
+            model, (x,y) = create_model()
+            return model.solve(time_limit=30)
+
+        # Measure the execution time
+        execution_time = timeit.timeit(run_code, number=1)
+
+        n_sols, transform_time, solve_time, num_branches = run_code()
+        tablesp.add_row([nb, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/number_partitioning.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")

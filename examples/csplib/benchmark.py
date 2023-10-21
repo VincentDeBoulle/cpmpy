@@ -9,8 +9,11 @@ files = ["examples/csplib/prob001_car_sequence.py",
          "examples/csplib/prob019_magic_sequence.py"
          "examples/csplib/prob026_sport_scheduling.py",
          "examples/csplib/prob044_steiner.py",
+         "examples/csplib/porb049_number_partitioning.py",
+         "examples/csplib/prob050_diamond_free.py",
          "examples/csplib/prob054_n_queens.py",
-         "examples/csplib/prob076_costas_arrays.py"
+         "examples/csplib/prob076_costas_arrays.py",
+         "examples/cslib/prob084_hadamard_matrix.py"
          ]
 
 for file_name in files:

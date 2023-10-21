@@ -28,9 +28,14 @@ Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import sys
 import numpy as np
+
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 from cpmpy.solvers import *
 from itertools import combinations
+import timeit
+from prettytable import PrettyTable
 
 def diamond_free(N=10):
     # By definition a and b will have the same cardinality:
@@ -82,15 +87,34 @@ def print_sol(matrix):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-n", type=int, default=10, help="Size of diamond")
-    parser.add_argument("--solution-limit", type=int, default=0, help="Number of solutions to find, find all by default")
+    tablesp = PrettyTable(['Size of diamond', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
-    args = parser.parse_args()
+    for nb in range(10, 21):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-n", type=int, default=nb, help="Size of diamond")
+        parser.add_argument("--solution-limit", type=int, default=0, help="Number of solutions to find, find all by default")
 
-    model, matrix = diamond_free(args.n)
-    num_sol = model.solveAll(
-        solution_limit=args.solution_limit,
-        display=lambda : print_sol(matrix))
-    print("num_solutions:",num_sol)
+        args = parser.parse_args()
+        print(args.n)
+
+        def create_model():
+            return diamond_free(args.n)
+        
+        model_creation_time = timeit.timeit(create_model, number = 1)
+
+        def run_code():
+            model, matrix = create_model()
+            return model.solveAll(
+                solution_limit=args.solution_limit,
+                time_limit=30)
+
+        # Measure the execution time
+        execution_time = timeit.timeit(run_code, number=1)
+
+        n_sols, transform_time, solve_time, num_branches = run_code()
+        tablesp.add_row([nb, n_sols, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+
+        with open("cpmpy/timing_results/diamond_free.txt", "w") as f:
+            f.write(str(tablesp))
+            f.write("\n")
 
