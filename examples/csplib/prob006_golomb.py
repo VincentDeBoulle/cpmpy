@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     tablesp = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
 
-    for sz in range(5, 16):
+    for sz in range(5, 13):
 
         parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-size", type=int, default=sz, help="Size of the ruler")
