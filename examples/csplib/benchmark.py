@@ -5,6 +5,7 @@ files = ["examples/csplib/prob001_car_sequence.py",
          "examples/csplib/prob005_auto_correlation.py", 
          "examples/csplib/prob006_golomb.py",
          "examples/csplib/prob007_all_interval.py",
+         "examples/csplib/prob008_vessel_loading.py",
          "examples/csplib/prob009_perfect_squares.py",
          "examples/csplib/prob019_magic_sequence.py"
          "examples/csplib/prob026_sport_scheduling.py",

@@ -26,7 +26,7 @@ from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
 import json
 import timeit
-
+import gc
 
 def perfect_squares(base, sides, **kwargs):
     model = Model()
@@ -127,8 +127,17 @@ if __name__ == "__main__":
                 return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
 
         
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
+
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
         transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
+
         
         tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 

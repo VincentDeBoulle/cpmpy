@@ -18,6 +18,7 @@ import sys
 import timeit
 import numpy as np
 from prettytable import PrettyTable
+import gc
 
 sys.path.append('../cpmpy')
 
@@ -79,9 +80,17 @@ if __name__ == "__main__":
             return model.solveAll(solution_limit=args.solution_limit,
                                 display=lambda : print_sol(sets))
 
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
 
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
         _, transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
+
         tablsp.add_row([num, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/steiner.txt", "w") as f:

@@ -5,7 +5,7 @@ Sport scheduling in CPMpy
 Model created by Ignace Bleukx
 """
 import pandas as pd
-
+import gc
 import sys
 
 from prettytable import PrettyTable
@@ -74,8 +74,16 @@ if __name__ == "__main__":
             ret, transform_time, solve_time, num_branches = model.solve(time_limit=30)
             return transform_time, solve_time, num_branches
         
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
+
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
         transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
 
         tablesp.add_row([nb, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 

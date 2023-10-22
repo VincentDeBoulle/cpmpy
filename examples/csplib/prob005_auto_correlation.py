@@ -15,7 +15,7 @@ import numpy as np
 from cpmpy import *
 import timeit
 from prettytable import PrettyTable
-
+import gc
 
 def auto_correlation(n=16):
 
@@ -61,9 +61,17 @@ if __name__ == "__main__":
             model, (arr,) = create_model()
             return model.solve(time_limit=30)
         
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
 
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
         _, transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
+
         tablsp.add_row([length, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/auto_correlation.txt", "w") as f:

@@ -26,7 +26,7 @@ Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 import sys
 import argparse
 import timeit
-
+import gc
 from prettytable import PrettyTable
 
 sys.path.append('../cpmpy')
@@ -84,9 +84,17 @@ if __name__ == "__main__":
             return model.solveAll(solution_limit=args.solution_limit,
                                 display=lambda: print_solution(x, diffs))
         
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
 
-        _, transform_time, solve_time, num_branches = run_code()
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
+        n_sols, transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
+
         tablesp.add_row([lngth, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/all_interval.txt", "w") as f:

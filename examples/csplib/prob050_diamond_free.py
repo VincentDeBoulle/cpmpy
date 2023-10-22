@@ -28,6 +28,7 @@ Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import sys
 import numpy as np
+import gc
 
 sys.path.append('../cpmpy')
 
@@ -108,10 +109,17 @@ if __name__ == "__main__":
                 solution_limit=args.solution_limit,
                 time_limit=30)
 
-        # Measure the execution time
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
 
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
         n_sols, transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
+
         tablesp.add_row([nb, n_sols, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/diamond_free.txt", "w") as f:

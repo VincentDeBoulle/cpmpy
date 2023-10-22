@@ -20,6 +20,7 @@ Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 import timeit
 import numpy as np
 import sys
+import gc
 
 from prettytable import PrettyTable
 
@@ -108,9 +109,17 @@ if __name__ == "__main__":
                 solution_limit=args.solution_limit
             )
 
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
 
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
         _, transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
+
         tablesp.add_row([args.size, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/costas_arrays.txt", "w") as f:

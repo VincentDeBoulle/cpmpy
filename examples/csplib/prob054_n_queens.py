@@ -25,6 +25,7 @@ import numpy as np
 from cpmpy import *
 import timeit
 from prettytable import PrettyTable
+import gc
 
 def n_queens(n=16):
 
@@ -52,7 +53,7 @@ if __name__ == "__main__":
 
     tablesp = PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
-    for nb in range(5, 6):
+    for nb in range(5, 14):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Number of queens")
         parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
@@ -73,10 +74,17 @@ if __name__ == "__main__":
             return model.solveAll(solution_limit=args.solution_limit)
             
 
-        # Measure the execution time
-        execution_time = timeit.timeit(run_code, number=1)
+        # Disable garbage collection for timing measurements
+        gc.disable()
 
+        # Measure the model creation and execution time
+        start_time = timeit.default_timer()
         n_sols, transform_time, solve_time, num_branches = run_code()
+        execution_time = timeit.default_timer() - start_time
+
+        # Re-enable garbage collection
+        gc.enable()
+
         tablesp.add_row([nb, n_sols, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
         with open("cpmpy/timing_results/n_queens_times.txt", "w") as f:
