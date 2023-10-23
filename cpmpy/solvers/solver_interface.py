@@ -75,7 +75,6 @@ class SolverInterface(object):
         # initialise variable handling
         self.user_vars = set()  # variables in the original (non-transformed) model
         self._varmap = dict()   # maps cpmpy variables to native solver variables
-        self.cse_expr = dict()  # maps expressions to cpmpy variables (for Common Subexpression Elimination)
 
         # rest uses own API
         if cpm_model is not None:

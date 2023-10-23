@@ -24,7 +24,7 @@ from .negation import recurse_negation
     - reify_rewrite():      rewrites reifications not supported by a solver to ones that are
 """
 
-def only_bv_reifies(constraints, cse_expr):
+def only_bv_reifies(constraints):
     newcons = []
     for cpm_expr in constraints:
         if cpm_expr.name in ['->', "=="]:
@@ -34,11 +34,11 @@ def only_bv_reifies(constraints, cse_expr):
                 # BE -> BV :: ~BV -> ~BE
                 if cpm_expr.name == '->':
                     newexpr = (~a1).implies(recurse_negation(a0))
-                    newexpr = only_bv_reifies(flatten_constraint(newexpr, cse_expr), cse_expr)
+                    newexpr = only_bv_reifies(flatten_constraint(newexpr))
                 else:
                     newexpr = [a1 == a0]  # BE == BV :: BV == BE
                     if not a0.is_bool():
-                        newexpr = flatten_constraint(newexpr, cse_expr)
+                        newexpr = flatten_constraint(newexpr)
                 newcons.extend(newexpr)
             else:
                 newcons.append(cpm_expr)
@@ -46,7 +46,7 @@ def only_bv_reifies(constraints, cse_expr):
             newcons.append(cpm_expr)
     return newcons
 
-def only_implies(constraints, cse_expr):
+def only_implies(constraints):
     """
         Transforms all reifications to BV -> BE form
 
@@ -72,7 +72,7 @@ def only_implies(constraints, cse_expr):
                 #                   :: BV0 -> (~BV2|BV3) & BV0 -> (~BV3|BV2)
                 bv2,bv3 = a1.args
                 newexpr = [a0.implies(~bv2|bv3), a0.implies(~bv3|bv2)]
-                newcons.extend(only_implies(flatten_constraint(newexpr, cse_expr)))
+                newcons.extend(only_implies(flatten_constraint(newexpr)))
             else:
                 newcons.append(cpm_expr)
 
@@ -93,7 +93,7 @@ def only_implies(constraints, cse_expr):
                 if isinstance(a1, GlobalConstraint):
                     newcons.extend(newexprs)
                 else:
-                    newcons.extend(only_implies(only_bv_reifies(flatten_constraint(newexprs, cse_expr), cse_expr), cse_expr))
+                    newcons.extend(only_implies(only_bv_reifies(flatten_constraint(newexprs))))
         else:
             # all other flat normal form expressions are fine
             newcons.append(cpm_expr)

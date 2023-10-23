@@ -73,23 +73,20 @@ if __name__ == "__main__":
 
         print(lngth)
         args = parser.parse_args()
-
-        def create_model():
-            return all_interval(args.length)
-        
-        model_creation_time = timeit.timeit(create_model, number=1)
         
         def run_code():
-            model, (x, diffs) = create_model()
+            start_model_time = timeit.default_timer()
+            model, (x, diffs) = all_interval(args.length)
+            model_creation_time = timeit.default_timer() - start_model_time
             return model.solveAll(solution_limit=args.solution_limit,
-                                display=lambda: print_solution(x, diffs))
+                                display=lambda: print_solution(x, diffs)), model_creation_time
         
         # Disable garbage collection for timing measurements
         gc.disable()
 
         # Measure the model creation and execution time
         start_time = timeit.default_timer()
-        n_sols, transform_time, solve_time, num_branches = run_code()
+        (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code()
         execution_time = timeit.default_timer() - start_time
 
         # Re-enable garbage collection

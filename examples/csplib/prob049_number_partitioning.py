@@ -66,15 +66,17 @@ if __name__ == "__main__":
         model_creation_time = timeit.timeit(create_model, number = 1)    
 
         def run_code():
-            model, (x,y) = create_model()
-            return model.solve(time_limit=30)
+            start_model_time = timeit.default_timer()
+            model, (x,y) = number_partitioning(n)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(time_limit=30), model_creation_time
 
         # Disable garbage collection for timing measurements
         gc.disable()
 
         # Measure the model creation and execution time
         start_time = timeit.default_timer()
-        n_sols, transform_time, solve_time, num_branches = run_code()
+        (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code()
         execution_time = timeit.default_timer() - start_time
 
         # Re-enable garbage collection

@@ -118,32 +118,29 @@ if __name__ == "__main__":
         problem_params = _get_instance(problem_data, args.instance)
         print("Problem name:", problem_params["name"])
 
-        def create_model():
-            return template_design(**problem_params)
-        
-        model_creation_time = timeit.timeit(create_model, number=1)
-
         def run_code():
-            model, (production, layout) = create_model()
+            start_model_time = timeit.default_timer()
+            model, (production, layout) = template_design(**problem_params)
+            model_creation_time = timeit.default_timer() - start_model_time
 
             ret, transform_time, solve_time, num_branches = model.solve(time_limit=30)
             if ret:
                 print("Solved this problem")
-                return transform_time, solve_time, num_branches
+                return model_creation_time, transform_time, solve_time, num_branches
                 
             elif model.status().runtime > 29:
                 print("This problem passes the time limit")
-                return 'Passes limit', 'Passes limit', 'Passes limit'
+                return 'Passes limit', 'Passes limit', 'Passes limit', 'Passes limit'
             else:
                 print("Model is unsatisfiable!")
-                return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
+                return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
 
         # Disable garbage collection for timing measurements
         gc.disable()
 
         # Measure the model creation and execution time
         start_time = timeit.default_timer()
-        transform_time, solve_time, num_branches = run_code()
+        model_creation_time, transform_time, solve_time, num_branches = run_code()
         execution_time = timeit.default_timer() - start_time
 
         # Re-enable garbage collection

@@ -82,6 +82,8 @@ import math
 import builtins
 import numpy as np
 
+from cpmpy import cse_hash_table
+
 from .normalize import toplevel_list, simplify_boolean
 from ..expressions.core import *
 from ..expressions.core import _wsum_should, _wsum_make
@@ -111,7 +113,7 @@ def flatten_model(orig_model):
             return Model(*basecons, maximize=newobj)
 
 
-def flatten_constraint(expr, cse_expr):
+def flatten_constraint(expr):
     """
         input is any expression; except is_num(), pure _NumVarImpl,
         or Operator/GlobalConstraint with not is_bool()

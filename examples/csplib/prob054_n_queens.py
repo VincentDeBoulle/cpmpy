@@ -63,15 +63,14 @@ if __name__ == "__main__":
         def create_model():
             return n_queens(args.n)
         
-        # Measure the model creation time
-        model_creation_time = timeit.timeit(create_model, number = 1)
-
         # Define a function to run the code
         def run_code():
+            start_model_time = timeit.default_timer()
             model, (queens,) = n_queens(args.n)
+            model_creation_time = timeit.default_timer() - start_model_time
             #n_sols = model.solveAll(solution_limit=args.solution_limit, display=lambda: print_sol(queens))
             print("queens:{}".format(args.n))
-            return model.solveAll(solution_limit=args.solution_limit)
+            return model.solveAll(solution_limit=args.solution_limit), model_creation_time
             
 
         # Disable garbage collection for timing measurements
@@ -79,7 +78,7 @@ if __name__ == "__main__":
 
         # Measure the model creation and execution time
         start_time = timeit.default_timer()
-        n_sols, transform_time, solve_time, num_branches = run_code()
+        (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code()
         execution_time = timeit.default_timer() - start_time
 
         # Re-enable garbage collection

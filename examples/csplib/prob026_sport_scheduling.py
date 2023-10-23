@@ -67,19 +67,19 @@ if __name__ == "__main__":
         def create_model():
             return sport_scheduling(n_teams)
         
-        model_creation_time = timeit.timeit(create_model, number=1)
-
         def run_code():
-            model, (home, away) = create_model()
+            start_model_time = timeit.default_timer()
+            model, (home, away) = sport_scheduling(n_teams)
+            model_creation_time = timeit.default_timer() - start_model_time
             ret, transform_time, solve_time, num_branches = model.solve(time_limit=30)
-            return transform_time, solve_time, num_branches
+            return model_creation_time, transform_time, solve_time, num_branches
         
         # Disable garbage collection for timing measurements
         gc.disable()
 
         # Measure the model creation and execution time
         start_time = timeit.default_timer()
-        transform_time, solve_time, num_branches = run_code()
+        model_creation_time, transform_time, solve_time, num_branches = run_code()
         execution_time = timeit.default_timer() - start_time
 
         # Re-enable garbage collection

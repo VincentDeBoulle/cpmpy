@@ -42,7 +42,6 @@ if __name__ == "__main__":
 
     tablesp = PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
-
     for lngth in range(15, 35, 2):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-length", type=int, default=lngth, help="Length of sequence")
@@ -50,21 +49,18 @@ if __name__ == "__main__":
         l = parser.parse_args().length
         print(l)
 
-        def create_model():
-            return hadmard_matrix(l)
-        
-        model_creation_time = timeit.timeit(create_model, number=1)
-
         def run_code():
-            model, (a,b) = create_model()
-            return model.solve(time_limit=30)
+            start_model_time = timeit.default_timer()
+            model, (a,b) = hadmard_matrix(l)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(time_limit=30), model_creation_time
 
         # Disable garbage collection for timing measurements
         gc.disable()
 
         # Measure the model creation and execution time
         start_time = timeit.default_timer()
-        n_sols, transform_time, solve_time, num_branches = run_code()
+        (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code()
         execution_time = timeit.default_timer() - start_time
 
         # Re-enable garbage collection
