@@ -33,7 +33,6 @@ import timeit
 
 import numpy as np
 
-from cpmpy import cse_hash_table
 from .expressions.core import Expression
 from .expressions.variables import NDVarArray
 from .expressions.utils import is_any_list
@@ -57,7 +56,6 @@ class Model(object):
 
             At most one of minimize/maximize can be set, if none are set, it is assumed to be a satisfaction problem
         """
-        cse_hash_table.cse_expressions = dict() # Initialise an empty hash table
         
         assert ((minimize is None) or (maximize is None)), "can not set both minimize and maximize"
         self.cpm_status = SolverStatus("Model") # status of solving this model, will be replaced

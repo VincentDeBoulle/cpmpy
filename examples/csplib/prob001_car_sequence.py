@@ -138,6 +138,6 @@ if __name__ == "__main__":
         
         tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time, num_branches])
 
-        with open("cpmpy/timing_results/car_sequence.txt", "w") as f:
+        with open("cpmpy/timing_results/car_sequence_CSE.txt", "w") as f:
             f.write(str(tablesp))
             f.write("\n")

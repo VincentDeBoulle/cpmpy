@@ -71,6 +71,7 @@ class SolverInterface(object):
         self.name = name
         self.cpm_status = SolverStatus(self.name) # status of solving this model
         self.objective_value_ = None
+        self.expr_dict = dict() # maps expressions to cpmpy variables for cse purposes
 
         # initialise variable handling
         self.user_vars = set()  # variables in the original (non-transformed) model
