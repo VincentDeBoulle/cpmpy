@@ -61,7 +61,7 @@ if __name__ == "__main__":
     tablesp_ortools_noCSE.title = 'Results of the Golomb problem without CSE (average of 10 iterations)'
 
 
-    for sz in range(8, 13):
+    for sz in range(8, 14):
 
         parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-size", type=int, default=sz, help="Size of the ruler")
@@ -70,9 +70,6 @@ if __name__ == "__main__":
         print(size)
 
         def run_code(slvr):
-            # Dummy computation or memory allocation
-            dummy_memory_hog = [0] * 1000000
-
             start_model_time = timeit.default_timer()
             model, (marks, ) = golomb(size)
             model_creation_time = timeit.default_timer() - start_model_time
