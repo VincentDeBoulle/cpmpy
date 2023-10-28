@@ -59,11 +59,7 @@ if __name__ == "__main__":
         parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
 
         args = parser.parse_args()
-
-        def create_model():
-            return n_queens(args.n)
         
-        # Define a function to run the code
         def run_code():
             start_model_time = timeit.default_timer()
             model, (queens,) = n_queens(args.n)
