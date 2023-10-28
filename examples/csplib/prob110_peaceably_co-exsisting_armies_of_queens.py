@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     tablesp = PrettyTable(['Size of board', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
 
-    for nb in range(10, 20):
+    for nb in range(20, 30):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Size of the board")
 
