@@ -36,6 +36,7 @@ def peg_solitaire(variant):
                 t.append((i, j, i, j - 1, i, j - 2))
         return sorted(t)
 
+
     transitions = build_transitions(init_board)
     nTransitions = len(transitions)
 
