@@ -82,8 +82,11 @@ if __name__ == "__main__":
     
     problem_names = [problem['name'] for problem in data]
 
-    tablesp = PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    
+    tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools.title = 'Results of the Car Sequence problem with CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_noCSE.title = 'Results of the Car Sequence problem without CSE (average of 10 iterations)'
+
     for name in problem_names:
         # argument parsing
         url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob008_vessel_loading.json"
@@ -108,11 +111,11 @@ if __name__ == "__main__":
         
         print("Problem name: ", problem_params["name"])
         
-        def run_code():
+        def run_code(slvr):
             start_model_time = timeit.default_timer()
             model, (left, right, top, bottom) = vessel_loading(**problem_params)
             model_creation_time = timeit.default_timer() - start_model_time
-            ret, transform_time, solve_time, num_branches = model.solve(time_limit=20)
+            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=20)
 
             # solve the model
             if ret:
@@ -121,25 +124,49 @@ if __name__ == "__main__":
                 
             elif model.status().runtime > 19:
                 print("This problem passes the time limit")
-                return 'Passes limit', 'Passes limit','Passes limit', 'Passes limit'
+                return 408, 408, 408, 408
             else:
                 print("Model is unsatisfiable!")
-                return 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable', 'Unsatisfiable'
+                return 404, 404, 404, 404
             
-        # Disable garbage collection for timing measurements
-        gc.disable()
+        for slvr in ["ortools_noCSE", "ortools"]:
+            total_model_creation_time = 0
+            total_transform_time = 0
+            total_solve_time = 0
+            total_execution_time = 0
+            total_num_branches = 0
 
-        # Measure the model creation and execution time
-        start_time = timeit.default_timer()
-        model_creation_time, transform_time, solve_time, num_branches = run_code()
-        execution_time = timeit.default_timer() - start_time
+            for lp in range(10):
+                # Disable garbage collection for timing measurements
+                gc.disable()
 
-        # Re-enable garbage collection
-        gc.enable()
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                model_creation_time,transform_time, solve_time, num_branches = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
 
+                total_model_creation_time += model_creation_time
+                total_transform_time += transform_time
+                total_solve_time += solve_time
+                total_execution_time += execution_time
+                total_num_branches += num_branches
 
-        tablesp.add_row([name, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+                # Re-enable garbage collection
+                gc.enable()
+            
+            average_model_creation_time = total_model_creation_time / 10
+            average_transform_time = total_transform_time / 10
+            average_solve_time = total_solve_time / 10
+            average_execution_time = total_execution_time / 10
+            average_num_branches = total_num_branches / 10
 
-        with open("cpmpy/timing_results/vessel_loading.txt", "w") as f:
-            f.write(str(tablesp))
-            f.write("\n")
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/vessel_loading_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")
+            else:
+                tablesp_ortools_noCSE.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
+                with open("cpmpy/timing_results/vessel_loading.txt", "w") as f:
+                    f.write(str(tablesp_ortools_noCSE))
+                    f.write("\n")
