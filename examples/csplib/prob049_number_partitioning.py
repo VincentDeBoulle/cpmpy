@@ -51,7 +51,10 @@ def number_partitioning(n=8):
 if __name__ == "__main__":
     import argparse
 
-    tablesp = PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = 'Results of the Number Partitioning problem with CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_noCSE.title = 'Results of the Number Partitioning problem without CSE (average of 10 iterations)'    
 
     for nb in range(10,101,10):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -65,25 +68,50 @@ if __name__ == "__main__":
 
         model_creation_time = timeit.timeit(create_model, number = 1)    
 
-        def run_code():
+        def run_code(slvr):
             start_model_time = timeit.default_timer()
             model, (x,y) = number_partitioning(n)
             model_creation_time = timeit.default_timer() - start_model_time
-            return model.solve(time_limit=30), model_creation_time
+            return model.solve(solver=slvr, time_limit=30), model_creation_time
 
-        # Disable garbage collection for timing measurements
-        gc.disable()
+        for slvr in ["ortools_noCSE", "ortools"]:
+            total_model_creation_time = 0
+            total_transform_time = 0
+            total_solve_time = 0
+            total_execution_time = 0
+            total_num_branches = 0
 
-        # Measure the model creation and execution time
-        start_time = timeit.default_timer()
-        (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code()
-        execution_time = timeit.default_timer() - start_time
+            for lp in range(10):
+                # Disable garbage collection for timing measurements
+                gc.disable()
 
-        # Re-enable garbage collection
-        gc.enable()
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
 
-        tablesp.add_row([nb, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+                total_model_creation_time += model_creation_time
+                total_transform_time += transform_time
+                total_solve_time += solve_time
+                total_execution_time += execution_time
+                total_num_branches += num_branches
 
-        with open("cpmpy/timing_results/number_partitioning.txt", "w") as f:
-            f.write(str(tablesp))
-            f.write("\n")
+                # Re-enable garbage collection
+                gc.enable()
+            
+            average_model_creation_time = total_model_creation_time / 10
+            average_transform_time = total_transform_time / 10
+            average_solve_time = total_solve_time / 10
+            average_execution_time = total_execution_time / 10
+            average_num_branches = total_num_branches / 10
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/number_partitioning_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")
+            else:
+                tablesp_ortools_noCSE.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
+                with open("cpmpy/timing_results/number_partitioning.txt", "w") as f:
+                    f.write(str(tablesp_ortools_noCSE))
+                    f.write("\n")

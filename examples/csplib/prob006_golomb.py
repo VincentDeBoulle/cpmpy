@@ -60,7 +60,7 @@ if __name__ == "__main__":
     tablesp_ortools_noCSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
     tablesp_ortools_noCSE.title = 'Results of the Golomb problem without CSE (average of 10 iterations)'
 
-    for sz in range(8, 14):
+    for sz in range(8, 20):
 
         parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-size", type=int, default=sz, help="Size of the ruler")

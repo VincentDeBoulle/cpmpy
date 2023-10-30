@@ -53,6 +53,10 @@ if __name__ == "__main__":
     import argparse
 
     tablesp = PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools.title = 'Results of the Sport Scheduling problem with CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_noCSE.title = 'Results of the Sport Scheduling problem without CSE (average of 10 iterations)'    
 
     for nb in range(2,21,2):
         print('\n number: {}'.format(nb))
@@ -67,26 +71,51 @@ if __name__ == "__main__":
         def create_model():
             return sport_scheduling(n_teams)
         
-        def run_code():
+        def run_code(slvr):
             start_model_time = timeit.default_timer()
             model, (home, away) = sport_scheduling(n_teams)
             model_creation_time = timeit.default_timer() - start_model_time
-            ret, transform_time, solve_time, num_branches = model.solve(time_limit=30)
+            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=30)
             return model_creation_time, transform_time, solve_time, num_branches
         
-        # Disable garbage collection for timing measurements
-        gc.disable()
+        for slvr in ["ortools_noCSE", "ortools"]:
+            total_model_creation_time = 0
+            total_transform_time = 0
+            total_solve_time = 0
+            total_execution_time = 0
+            total_num_branches = 0
 
-        # Measure the model creation and execution time
-        start_time = timeit.default_timer()
-        model_creation_time, transform_time, solve_time, num_branches = run_code()
-        execution_time = timeit.default_timer() - start_time
+            for lp in range(10):
+                # Disable garbage collection for timing measurements
+                gc.disable()
 
-        # Re-enable garbage collection
-        gc.enable()
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                model_creation_time, transform_time, solve_time, num_branches = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
 
-        tablesp.add_row([nb, model_creation_time, transform_time, solve_time, execution_time, num_branches])
+                total_model_creation_time += model_creation_time
+                total_transform_time += transform_time
+                total_solve_time += solve_time
+                total_execution_time += execution_time
+                total_num_branches += num_branches
 
-        with open("cpmpy/timing_results/sport_scheduling.txt", "w") as f:
-            f.write(str(tablesp))
-            f.write("\n")
+                # Re-enable garbage collection
+                gc.enable()
+
+            average_model_creation_time = total_model_creation_time / 10
+            average_transform_time = total_transform_time / 10
+            average_solve_time = total_solve_time / 10
+            average_execution_time = total_execution_time / 10
+            average_num_branches = total_num_branches / 10
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/sport_scheduling_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")
+            else:
+                tablesp_ortools_noCSE.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
+                with open("cpmpy/timing_results/sport_scheduling.txt", "w") as f:
+                    f.write(str(tablesp_ortools_noCSE))
+                    f.write("\n")
