@@ -202,7 +202,7 @@ class CPM_ortools(SolverInterface):
             if self.has_objective():
                 self.objective_value_ = self.ort_solver.ObjectiveValue()
 
-        return has_sol
+        return has_sol, self.ort_solver.NumBranches()
 
     def solveAll(self, display=None, time_limit=None, solution_limit=None, call_from_model=False, **kwargs):
         """

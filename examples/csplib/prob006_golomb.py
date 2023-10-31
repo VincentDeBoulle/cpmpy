@@ -20,7 +20,11 @@ See also my cpmpy page: http://www.hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
+sys.path.append('../cpmpy')
 
+import timeit
+from prettytable import PrettyTable
 from cpmpy import *
 
 def golomb(size=10):
@@ -50,16 +54,47 @@ def golomb(size=10):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-size", type=int, default=10, help="Size of the ruler")
+    tablesp_ortools_noCSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_noCSE.title = 'Results of the Golomb problem without CSE (average of 20 iterations)'
 
-    size = parser.parse_args().size
+    for sz in range(8,13):
 
-    model, (marks, ) = golomb(size)
+        parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-size", type=int, default=sz, help="Size of the ruler")
 
-    if model.solve():
-        print(marks.value())
-    else:
-        raise ValueError("Model is unsatisfiable")
+        size = parser.parse_args().size
+        print('Size:', size)
 
+        def run_code():
+            start_model_time = timeit.default_timer()
+            model, (marks,) = golomb(size)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(), model_creation_time
 
+        total_model_creation_time = 0
+        total_transform_time = 0
+        total_solve_time = 0
+        total_execution_time = 0
+        total_num_branches = 0
+
+        for lp in range(20):
+            start_time = timeit.default_timer()
+            (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code()
+            execution_time = timeit.default_timer() - start_time
+
+            total_model_creation_time += model_creation_time
+            total_transform_time += transform_time
+            total_solve_time += solve_time
+            total_execution_time += execution_time
+            total_num_branches += num_branches
+
+        average_model_creation_time = total_model_creation_time / 20
+        average_transform_time = total_transform_time / 20
+        average_solve_time = total_solve_time / 20
+        average_execution_time = total_execution_time / 20
+        average_num_branches = total_num_branches / 20
+
+        tablesp_ortools_noCSE.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+        with open("cpmpy/timing_results/golomb.txt", "w") as f:
+            f.write(str(tablesp_ortools_noCSE))
+            f.write("\n")
