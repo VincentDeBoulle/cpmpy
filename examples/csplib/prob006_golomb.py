@@ -55,7 +55,7 @@ if __name__ == "__main__":
     import argparse
 
     tablesp_ortools_noCSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the Golomb problem without CSE (average of 20 iterations)'
+    tablesp_ortools_noCSE.title = 'Results of the Golomb problem with CSE (average of 20 iterations)'
 
     for sz in range(8,13):
 
@@ -95,6 +95,6 @@ if __name__ == "__main__":
         average_num_branches = total_num_branches / 20
 
         tablesp_ortools_noCSE.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-        with open("cpmpy/timing_results/golomb.txt", "w") as f:
+        with open("cpmpy/timing_results/golomb_CSE.txt", "w") as f:
             f.write(str(tablesp_ortools_noCSE))
             f.write("\n")
