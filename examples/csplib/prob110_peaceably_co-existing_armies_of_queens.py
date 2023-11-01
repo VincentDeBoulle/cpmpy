@@ -18,6 +18,8 @@ sys.path.append('../cpmpy')
 
 # Load the libraries
 from cpmpy import *
+import timeit
+from prettytable import PrettyTable
 
 def peaceable_queens(n=8):
 
@@ -28,7 +30,7 @@ def peaceable_queens(n=8):
 
     num_black_queens = sum(b)
     num_white_queens = sum(w)
-    
+
     model += (num_black_queens == num_white_queens)
     model.objective(num_black_queens, minimize=False)
 
@@ -45,25 +47,65 @@ def peaceable_queens(n=8):
     return model, b,w
 
 if __name__ == "__main__":
-    n = 8 # Size of the board
+    tablesp_ortools = PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools.title = 'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem with CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_noCSE.title = 'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem without CSE (average of 10 iterations)'
+    
+    for sz in range(5, 11):
+        n = sz # Size of the board
+        print('Size: ', n)
+        
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, black_queens, white_queens = peaceable_queens(n)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(solver=slvr), model_creation_time, black_queens, white_queens
+        
+        for slvr in ['ortools_noCSE', 'ortools']:
+            total_model_creation_time = 0
+            total_transform_time = 0
+            total_solve_time = 0
+            total_execution_time = 0
+            total_num_branches = 0
 
-    model, b, w = peaceable_queens(n)
+            for lp in range(10):
+                start_time = timeit.default_timer()
+                (n_sols, transform_time, solve_time, num_branches), model_creation_time, black_queens, white_queens = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
 
-    if model.solve():
-        print(model.status())
+                line = '+---'*n +'+\n'
+                out = line
+                for x in range(n):
+                    for y in range(n):
+                        if black_queens.value()[x][y] == 1:
+                            out += '| B '
+                        elif white_queens.value()[x][y] == 1:
+                            out += '| W '
+                        else:
+                            out += '|   '
+                    out += '|\n' + line
+                print(out)
+                
+                total_model_creation_time += model_creation_time
+                total_transform_time += transform_time
+                total_solve_time += solve_time
+                total_execution_time += execution_time
+                total_num_branches += num_branches
 
-        # Pretty Print
-        line = '+---'*n +'+\n'
-        out = line
-        for x in range(n):
-            for y in range(n):
-                if b.value()[x][y] == 1:
-                    out += '| B '
-                elif w.value()[x][y] == 1:
-                    out += '| W '
-                else:
-                    out += '|   '
-            out += '|\n' + line
-        print(out)
-    else:
-        print("No solution found")
+            average_model_creation_time = total_model_creation_time / 10
+            average_transform_time = total_transform_time / 10
+            average_solve_time = total_solve_time / 10
+            average_execution_time = total_execution_time / 10
+            average_num_branches = total_num_branches / 10
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/peaceably_queens_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_noCSE':
+                tablesp_ortools_noCSE.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
+                with open("cpmpy/timing_results/peaceably_queens.txt", "w") as f:
+                    f.write(str(tablesp_ortools_noCSE))
+                    f.write("\n")
