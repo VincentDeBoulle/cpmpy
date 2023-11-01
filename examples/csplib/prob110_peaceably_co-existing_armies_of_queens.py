@@ -20,6 +20,7 @@ sys.path.append('../cpmpy')
 from cpmpy import *
 import timeit
 from prettytable import PrettyTable
+import gc
 
 def peaceable_queens(n=8):
 
@@ -69,7 +70,9 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(10):
+            for lp in range(50):
+                gc.disable()
+
                 start_time = timeit.default_timer()
                 (n_sols, transform_time, solve_time, num_branches), model_creation_time, black_queens, white_queens = run_code(slvr)
                 execution_time = timeit.default_timer() - start_time
@@ -93,11 +96,13 @@ if __name__ == "__main__":
                 total_execution_time += execution_time
                 total_num_branches += num_branches
 
-            average_model_creation_time = total_model_creation_time / 10
-            average_transform_time = total_transform_time / 10
-            average_solve_time = total_solve_time / 10
-            average_execution_time = total_execution_time / 10
-            average_num_branches = total_num_branches / 10
+                gc.enable()
+
+            average_model_creation_time = total_model_creation_time / 50
+            average_transform_time = total_transform_time / 50
+            average_solve_time = total_solve_time / 50
+            average_execution_time = total_execution_time / 50
+            average_num_branches = total_num_branches / 50
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])

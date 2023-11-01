@@ -1,16 +1,16 @@
 def reverse_board(board):
-    return [[0 if board[i][j] == 1 else 1 if board[i][j] == 0 else None for i in range(len(board))] for j in range(len(board[0]))]
+    return [[0 if board[i][j] == 1 else 1 if board[i][j] == 0 else -1 for i in range(len(board))] for j in range(len(board[0]))]
  
  
 def english_board(i=3, j=3):
     init_board = [
-        [None, None, 1, 1, 1, None, None],
-        [None, None, 1, 1, 1, None, None],
+        [-1, -1, 1, 1, 1, -1, -1],
+        [-1, -1, 1, 1, 1, -1, -1],
         [1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1],
-        [None, None, 1, 1, 1, None, None],
-        [None, None, 1, 1, 1, None, None]
+        [-1, -1, 1, 1, 1, -1, -1],
+        [-1, -1, 1, 1, 1, -1, -1]
     ]
     init_board[i][j] = 0
     return init_board, reverse_board(init_board)
