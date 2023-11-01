@@ -137,6 +137,9 @@ class CPM_ortools_noCSE(SolverInterface):
         if time_limit is not None:
             self.ort_solver.parameters.max_time_in_seconds = float(time_limit)
 
+        # set default num_search_workers to 6 => highest number with deterministic search
+        self.ort_solver.parameters.num_search_workers = 6
+
         if assumptions is not None:
             ort_assum_vars = self.solver_vars(assumptions)
             # dict mapping ortools vars to CPMpy vars
