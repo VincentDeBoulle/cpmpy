@@ -48,10 +48,13 @@ def peaceable_queens(n=8):
     return model, b,w
 
 if __name__ == "__main__":
+
+    nb_iterations = 1
+
     tablesp_ortools = PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = 'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem with CSE (average of 10 iterations)'
+    tablesp_ortools.title = f'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE =  PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = 'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem without CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE.title = f'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem without CSE (average of {nb_iterations} iterations)'
     
     for sz in range(5, 11):
         n = sz # Size of the board
@@ -70,7 +73,7 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(50):
+            for lp in range(nb_iterations):
                 gc.disable()
 
                 start_time = timeit.default_timer()
@@ -98,11 +101,11 @@ if __name__ == "__main__":
 
                 gc.enable()
 
-            average_model_creation_time = total_model_creation_time / 50
-            average_transform_time = total_transform_time / 50
-            average_solve_time = total_solve_time / 50
-            average_execution_time = total_execution_time / 50
-            average_num_branches = total_num_branches / 50
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
