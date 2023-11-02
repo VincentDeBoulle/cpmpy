@@ -51,12 +51,14 @@ def print_sol(queens):
 if __name__ == "__main__":
     import argparse
 
-    tablesp_ortools =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = 'Results of the N-Queens problem with CSE (average of 10 iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_noCSE.title = 'Results of the N-Queens problem without CSE (average of 10 iterations)'    
+    nb_iterations = 50
 
-    for nb in range(5, 20):
+    tablesp_ortools =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = f'Results of the N-Queens problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_noCSE.title = f'Results of the N-Queens problem without CSE (average of {nb_iterations} iterations)'    
+
+    for nb in range(500, 700, 5):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Number of queens")
         parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
@@ -69,9 +71,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             #n_sols = model.solveAll(solution_limit=args.solution_limit, display=lambda: print_sol(queens))
             print("queens:{}".format(args.n))
-            return model.solveAll(
-                solver=slvr,
-                solution_limit=args.solution_limit), model_creation_time
+            return model.solve(), model_creation_time
             
         for slvr in ["ortools_noCSE", "ortools"]:
             total_model_creation_time = 0
@@ -80,7 +80,7 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(10):
+            for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
@@ -98,11 +98,11 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
             
-            average_model_creation_time = total_model_creation_time / 10
-            average_transform_time = total_transform_time / 10
-            average_solve_time = total_solve_time / 10
-            average_execution_time = total_execution_time / 10
-            average_num_branches = total_num_branches / 10
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([nb, n_sols, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])

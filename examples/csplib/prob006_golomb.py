@@ -55,12 +55,12 @@ def golomb(size=10):
 if __name__ == "__main__":
     import argparse
 
+    nb_iterations = 50
+
     tablesp_ortools = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = 'OR-Tools: Results of the Golomb problem with CSE (average of 50 iterations)'
+    tablesp_ortools.title = f'OR-Tools: Results of the Golomb problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = 'OR-Tools: Results of the Golomb problem without CSE (average of 50 iterations)'
-    tablesp_exact_noCSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_exact_noCSE.title = 'Exact: Results of the Golomb problem without CSE (average of 20 iterations)'
+    tablesp_ortools_noCSE.title = f'OR-Tools: Results of the Golomb problem without CSE (average of {nb_iterations} iterations)'
 
     for sz in range(8, 20):
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(50):
+            for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
                 #gc.disable()
 
@@ -101,11 +101,11 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 #gc.enable()
 
-            average_model_creation_time = total_model_creation_time / 50
-            average_transform_time = total_transform_time / 50
-            average_solve_time = total_solve_time / 50
-            average_execution_time = total_execution_time / 50
-            average_num_branches = total_num_branches / 50
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
@@ -117,9 +117,3 @@ if __name__ == "__main__":
                 with open("cpmpy/timing_results/2_golomb.txt", "w") as f:
                     f.write(str(tablesp_ortools_noCSE))
                     f.write("\n")
-            else:
-                tablesp_exact_noCSE.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
-                with open("cpmpy/timing_results/2_golomb.txt", "w") as f:
-                    f.write(str(tablesp_ortools_noCSE))
-                    f.write("\n")
-

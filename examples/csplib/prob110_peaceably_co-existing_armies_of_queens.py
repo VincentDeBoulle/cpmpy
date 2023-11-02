@@ -49,14 +49,14 @@ def peaceable_queens(n=8):
 
 if __name__ == "__main__":
 
-    nb_iterations = 1
+    nb_iterations = 50
 
     tablesp_ortools = PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
     tablesp_ortools.title = f'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE =  PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
     tablesp_ortools_noCSE.title = f'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem without CSE (average of {nb_iterations} iterations)'
     
-    for sz in range(5, 11):
+    for sz in range(5, 21):
         n = sz # Size of the board
         print('Size: ', n)
         

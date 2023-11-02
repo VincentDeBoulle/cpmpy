@@ -1,7 +1,8 @@
 import subprocess
 
 files = ["examples/csplib/prob110_peaceably_co-existing_armies_of_queens.py",
-         "examples/csplib/prob006_golomb.py"
+         "examples/csplib/prob006_golomb.py",
+         "examples/csplib/prob054_n_queens.py"
          ]
 
 for file_name in files:
