@@ -109,11 +109,11 @@ if __name__ == "__main__":
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/2_golomb_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/golomb_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
             elif slvr == 'ortools_noCSE':
                 tablesp_ortools_noCSE.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
-                with open("cpmpy/timing_results/2_golomb.txt", "w") as f:
+                with open("cpmpy/timing_results/golomb.txt", "w") as f:
                     f.write(str(tablesp_ortools_noCSE))
                     f.write("\n")
