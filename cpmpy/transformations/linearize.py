@@ -329,3 +329,27 @@ def canonical_comparison(lst_of_expr):
             newlist.append(cpm_expr)
 
     return newlist
+
+def order_constraint(lst_of_expr):
+    lst_of_expr = toplevel_list(lst_of_expr)               # ensure it is a list
+
+    newlist = []
+    for cpm_expr in lst_of_expr:
+        if isinstance(cpm_expr, Comparison):
+            lhs, rhs = cpm_expr.args
+            if lhs.name == "wsum":
+                print("before: ", lhs.args)
+                new_weights, new_args = [], []
+                mapping = dict(zip(lhs.args[1], lhs.args[0]))
+                print(lhs.args[1])
+                new_args = sorted(lhs.args[1])
+                print(new_args)
+                new_weights = [mapping[e] for e in new_args]
+                print("after: ", lhs.args)
+                
+                lhs = Operator("wsum", [new_weights, new_args])
+
+
+        newlist.append(cpm_expr)
+
+    return newlist
