@@ -17,10 +17,14 @@ model = Model()
 model += AllDifferent([A, B, C, D, E, F, G])
 model += B + A + C == F
 model += A + B == C
+model += B + A == C
 model += B + A + D == G
 model += G - E == B
 model += D + C == E + B
 model += C * B + B== G - A + B
+model += C == A + B
+model += D == G - (B + A)
+
 
 model.solve()
 print("A: ", A.value())
