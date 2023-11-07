@@ -342,7 +342,7 @@ def order_constraint(lst_of_expr):
                     lhs = order_constraint(lhs)
                 elif isinstance(rhs, Comparison):
                     rhs = order_constraint(rhs)
-            elif (isinstance(lhs, Operator) and lhs.name == "sum") or (isinstance(rhs, Operator) and rhs.name == "sum"):
+            elif (isinstance(lhs, Operator) and lhs.name in {"sum", "wsum"}) or (isinstance(rhs, Operator) and rhs.name in {"sum", "wsum"}):
                 if isinstance(lhs, Operator) and lhs.name == "sum":
                     for i, arg in enumerate(lhs.args):
                         if not (isinstance(arg, _BoolVarImpl) or isinstance(arg, _NumVarImpl)):
@@ -353,7 +353,14 @@ def order_constraint(lst_of_expr):
                         if not (isinstance(arg, _BoolVarImpl) or isinstance(arg, _NumVarImpl)):
                             rhs.args[i] = order_expressions(arg) 
                     rhs = Operator("sum", sorted(rhs.args, key=str))
-            
+                """if isinstance(lhs, Operator) and lhs.name == "wsum": # This section doesn't work yet
+                    str_var = [str(e) for e in lhs.args[1]]
+                    mapping = {str_var[i]: [lhs.args[0][i], lhs.args[1][i]] for i in range(len(str_var))}
+                    str_var = sorted(str_var)
+                    new_args = [mapping[e][1] for e in str_var]
+                    new_weights = [mapping[e][0] for e in str_var]
+                    lhs = Operator("wsum", [new_weights, new_args])
+                    print(lhs)"""
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
         else:   # rest of expressions
             newlist.append(cpm_expr)
@@ -373,11 +380,3 @@ def order_expressions(expr):
     else:
         return Operator(expr.name, sorted(expr.args, key=str))
 
-"""if lhs.name == "wsum":
-                new_weights, new_args = [], []
-                str_var = [str(a) for a in lhs.args[1]]
-                mapping = {str_var[i]: [lhs.args[0][i], lhs.args[1][i]] for i in range(len(str_var))}
-                sorted_str_var = sorted(str_var)
-                new_args = [mapping[e][1] for e in sorted_str_var]
-                new_weights = [mapping[e][0] for e in sorted_str_var]                
-                lhs = Operator("wsum", [new_weights, new_args])"""

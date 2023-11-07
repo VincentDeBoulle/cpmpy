@@ -333,7 +333,7 @@ class CPM_ortools(SolverInterface):
         cpm_cons = toplevel_list(cpm_expr)
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
-        #cpm_cons = canonical_comparison(cpm_cons)
+        cpm_cons = canonical_comparison(cpm_cons)
         cpm_cons = order_constraint(cpm_cons)
         # HIER KOMT CANONICAL + ALPHABETICAL -> extra lijn
         cpm_cons = flatten_constraint(cpm_cons, expr_dict=self.expr_dict)  # flat normal form
