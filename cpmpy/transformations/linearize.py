@@ -328,11 +328,12 @@ def canonical_comparison(lst_of_expr):
         else:   # rest of expressions
             newlist.append(cpm_expr)
 
-    return newlist
+    return newlist    
 
 def order_constraint(lst_of_expr):
+
     lst_of_expr = toplevel_list(lst_of_expr)               # ensure it is a list
-    #print("\n", lst_of_expr)
+
     newlist = []
     for cpm_expr in lst_of_expr:
         if isinstance(cpm_expr, Comparison):
@@ -342,30 +343,35 @@ def order_constraint(lst_of_expr):
                     lhs = order_constraint(lhs)
                 elif isinstance(rhs, Comparison):
                     rhs = order_constraint(rhs)
-            elif (isinstance(lhs, Operator) and lhs.name in {"sum", "wsum"}) or (isinstance(rhs, Operator) and rhs.name in {"sum", "wsum"}):
-                if isinstance(lhs, Operator) and lhs.name == "sum":
-                    for i, arg in enumerate(lhs.args):
-                        if not (isinstance(arg, _BoolVarImpl) or isinstance(arg, _NumVarImpl)):
-                            lhs.args[i] = order_expressions(arg) 
-                    lhs = Operator("sum", sorted(lhs.args, key=str))
-                if isinstance(rhs, Operator) and rhs.name == "sum":
-                    for i, arg in enumerate(rhs.args):
-                        if not (isinstance(arg, _BoolVarImpl) or isinstance(arg, _NumVarImpl)):
-                            rhs.args[i] = order_expressions(arg) 
-                    rhs = Operator("sum", sorted(rhs.args, key=str))
-                """if isinstance(lhs, Operator) and lhs.name == "wsum": # This section doesn't work yet
-                    str_var = [str(e) for e in lhs.args[1]]
-                    mapping = {str_var[i]: [lhs.args[0][i], lhs.args[1][i]] for i in range(len(str_var))}
-                    str_var = sorted(str_var)
-                    new_args = [mapping[e][1] for e in str_var]
-                    new_weights = [mapping[e][0] for e in str_var]
-                    lhs = Operator("wsum", [new_weights, new_args])
-                    print(lhs)"""
+
+            if isinstance(lhs, Operator):
+                lhs = create_sorted_operator(lhs.name, lhs.args)
+            if isinstance(rhs, Operator):
+                rhs = create_sorted_operator(rhs.name, rhs.args)
+
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
+        
         else:   # rest of expressions
             newlist.append(cpm_expr)
-    print(newlist)
+
     return newlist
+
+def create_sorted_operator(op, args):
+    if op in {"sum","mul"}:
+        new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args]
+        return Operator(op, new_args)
+    elif op == "wsum":
+        new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
+        if op == "wsum":
+            str_var = [str(s) + str(e) for s, e in zip(args[0], new_args)]
+            mapping = {s: [args[0][i], new_args[i]] for i, s in enumerate(str_var)}
+            str_var = sorted(str_var)
+            args = [mapping[s][1] for s in str_var]
+            new_weights = [mapping[s][0] for s in str_var]
+            new_args = [new_weights, args]
+        return Operator(op, new_args)
+    return Operator(op, args)
+
 
 def order_expressions(expr):
     """

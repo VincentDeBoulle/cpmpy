@@ -49,7 +49,7 @@ if __name__ == "__main__":
     tablesp_ortools_noCSE =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
     tablesp_ortools_noCSE.title = 'Results of the Magic Sequence problem without CSE (average of 10 iterations)'    
 
-    for n in range(500, 600, 5):
+    for n in range(10, 11, 5):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-length", type=int, default=n, help="Length of the sequence, default is 10")
 
