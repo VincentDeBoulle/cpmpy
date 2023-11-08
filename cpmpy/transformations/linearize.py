@@ -46,7 +46,7 @@ from .get_variables import get_variables
 from ..exceptions import TransformationNotImplementedError
 
 from ..expressions.core import Comparison, Operator, BoolVal
-from ..expressions.globalconstraints import GlobalConstraint, DirectConstraint
+from ..expressions.globalconstraints import GlobalConstraint, DirectConstraint, alldifferent
 from ..expressions.utils import is_any_list, is_num, eval_comparison, is_bool
 
 from ..expressions.variables import _BoolVarImpl, boolvar, NegBoolView, _NumVarImpl
@@ -336,6 +336,7 @@ def order_constraint(lst_of_expr):
 
     newlist = []
     for cpm_expr in lst_of_expr:
+
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
             if (isinstance(lhs, Comparison) or isinstance(rhs, Comparison)) and cpm_expr.name == "==":
@@ -350,15 +351,29 @@ def order_constraint(lst_of_expr):
                 rhs = create_sorted_operator(rhs.name, rhs.args)
 
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
-        
-        else:   # rest of expressions
+
+        elif isinstance(cpm_expr, Operator) and cpm_expr.name in {"or", "and"}:
+            ordered_expr = []
+
+            for expr in cpm_expr.args:
+                ord_expr = order_constraint([expr])
+                ordered_expr.append(ord_expr)
+
+            if cpm_expr.name == "or":
+                newlist.append(ordered_expr[0] or ordered_expr[1])
+            else:
+                newlist.append(ordered_expr[0] and ordered_expr[1])
+
+        elif isinstance(cpm_expr, GlobalConstraint) and cpm_expr.name == "alldifferent":
+            newlist.append(alldifferent(sorted(cpm_expr.args, key=str)))
+        else:  # rest of expressions
             newlist.append(cpm_expr)
 
     return newlist
 
 def create_sorted_operator(op, args):
     if op in {"sum","mul"}:
-        new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args]
+        new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
         return Operator(op, new_args)
     elif op == "wsum":
         new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
