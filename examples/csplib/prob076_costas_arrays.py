@@ -104,10 +104,7 @@ if __name__ == "__main__":
             start_model_time = timeit.default_timer()
             model, (costas, differences) = costas_array(args.size)
             model_creation_time = timeit.default_timer() - start_model_time
-            return model.solveAll(
-                solver=slvr,
-                solution_limit=args.solution_limit
-            ), model_creation_time
+            return model.solve(solver=slvr), model_creation_time
 
         for slvr in ["ortools_noCSE", "ortools"]:
             total_model_creation_time = 0

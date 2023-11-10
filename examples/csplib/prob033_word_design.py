@@ -111,11 +111,11 @@ if __name__ == "__main__":
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/perfect_squares_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/word_design_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
             else:
                 tablesp_ortools_noCSE.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
-                with open("cpmpy/timing_results/perfect_squares.txt", "w") as f:
+                with open("cpmpy/timing_results/word_design.txt", "w") as f:
                     f.write(str(tablesp_ortools_noCSE))
                     f.write("\n")                

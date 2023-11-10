@@ -45,7 +45,7 @@ if __name__ == "__main__":
     tablesp_ortools_noCSE =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools_noCSE.title = 'Results of the Hadamard matrix problem without CSE (average of 10 iterations)'    
 
-    for lngth in range(15, 35, 2):
+    for lngth in range(17, 35, 2):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-length", type=int, default=lngth, help="Length of sequence")
 

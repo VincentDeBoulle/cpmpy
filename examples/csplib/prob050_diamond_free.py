@@ -105,9 +105,8 @@ if __name__ == "__main__":
             start_model_time = timeit.default_timer()
             model, matrix = diamond_free(args.n)
             model_creation_time = timeit.default_timer() - start_model_time
-            return model.solveAll(
+            return model.solve(
                 solver=slvr,
-                solution_limit=args.solution_limit,
                 time_limit=30), model_creation_time
 
         for slvr in ["ortools_noCSE", "ortools"]:

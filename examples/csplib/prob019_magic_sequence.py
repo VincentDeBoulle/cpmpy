@@ -43,13 +43,15 @@ def magic_sequence(n):
     return model, (x,)
 
 if __name__ == "__main__":
+
+    nb_iterations = 20
     
     tablesp_ortools =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = 'Results of the Magic Sequence problem with CSE (average of 10 iterations)'
+    tablesp_ortools.title = f'Results of the Magic Sequence problem with CSE (average of ${nb_iterations}$ iterations)'
     tablesp_ortools_noCSE =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the Magic Sequence problem without CSE (average of 10 iterations)'    
+    tablesp_ortools_noCSE.title = f'Results of the Magic Sequence problem without CSE (average of ${nb_iterations}$ iterations)'    
 
-    for n in range(10, 11, 5):
+    for n in range(100, 155, 5):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-length", type=int, default=n, help="Length of the sequence, default is 10")
 
@@ -87,11 +89,11 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
 
-            average_model_creation_time = total_model_creation_time / 10
-            average_transform_time = total_transform_time / 10
-            average_solve_time = total_solve_time / 10
-            average_execution_time = total_execution_time / 10
-            average_num_branches = total_num_branches / 10
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations
         
             if slvr == 'ortools':
                 tablesp_ortools.add_row([args.length, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
