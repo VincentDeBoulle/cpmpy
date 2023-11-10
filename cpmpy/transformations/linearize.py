@@ -336,7 +336,6 @@ def order_constraint(lst_of_expr):
 
     newlist = []
     for cpm_expr in lst_of_expr:
-
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
             if (isinstance(lhs, Comparison) or isinstance(rhs, Comparison)) and cpm_expr.name == "==":
@@ -344,11 +343,10 @@ def order_constraint(lst_of_expr):
                     lhs = order_constraint(lhs)
                 elif isinstance(rhs, Comparison):
                     rhs = order_constraint(rhs)
-
             if isinstance(lhs, Operator):
-                lhs = create_sorted_operator(lhs.name, lhs.args)
+                lhs = create_sorted_expression(lhs.name, lhs.args)
             if isinstance(rhs, Operator):
-                rhs = create_sorted_operator(rhs.name, rhs.args)
+                rhs = create_sorted_expression(rhs.name, rhs.args)
 
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
 
@@ -371,10 +369,14 @@ def order_constraint(lst_of_expr):
 
     return newlist
 
-def create_sorted_operator(op, args):
-    if op in {"sum","mul"}:
+def create_sorted_expression(op, args):
+    if op == "sum":
         new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
         return Operator(op, new_args)
+    elif op == "mul":
+        return order_expressions(args[0] * args[1])
+    elif op == "div":
+        return order_expressions(args[0] // args[1])
     elif op == "wsum":
         new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
         if op == "wsum":
@@ -387,17 +389,43 @@ def create_sorted_operator(op, args):
         return Operator(op, new_args)
     return Operator(op, args)
 
-
 def order_expressions(expr):
     """
     Orders an expression alphabetically
     """
+    if isinstance(expr, _BoolVarImpl) or isinstance(expr, _NumVarImpl):
+            return expr
     if expr.name == "-":
         if isinstance(expr.args[0], _BoolVarImpl) or isinstance(expr.args[0], _NumVarImpl):
             return expr
         else:
             ord_expr = order_expressions(expr.args[0])
             return Operator("-", [ord_expr])
+    elif expr.name == "mul":
+        lst = sorted(make_mul_list(expr), key=str)
+        result = lst[0]
+        for element in lst[1::]:
+            result *= element
+        return result
+    
+    elif expr.name == "div":
+        lhs = order_expressions(expr.args[0])
+        rhs = order_expressions(expr.args[1])
+        return lhs // rhs
+
     else:
         return Operator(expr.name, sorted(expr.args, key=str))
 
+
+def make_mul_list(expr):
+    """
+    Make a list of all arguments of a multiplication.
+    E.g. A * B * (C * D) * E --> [A, B, C, D, E]
+    """
+    if isinstance(expr, _NumVarImpl):   # Base case multiplication
+        return [expr]
+    
+    left = make_mul_list(expr.args[0])
+    right = make_mul_list(expr.args[1])
+    args = left + right
+    return args
