@@ -489,7 +489,10 @@ def normalized_numexpr(expr, expr_dict=None):
             return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
 
         if all(__is_flat_var(arg) for arg in expr.args):
-            return (expr, [])
+            lb, ub = expr.get_bounds()
+            ivar = _IntVarImpl(lb, ub)
+            expr_dict[expr] = ivar
+            return (ivar, [expr == ivar])
 
         # pre-process sum, to fold in nested subtractions and const*Exprs, e.g. x - y + 2*(z+r)
         if expr.name == "sum" and \
