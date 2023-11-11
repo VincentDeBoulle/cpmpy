@@ -487,6 +487,22 @@ def normalized_numexpr(expr, expr_dict=None):
 
     elif isinstance(expr, Operator):
         # rewrite -a, const*a and a*const into a weighted sum, so it can be used as objective
+        if expr.name == '-':
+            if isinstance(expr.args[0], _IntVarImpl):
+                return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
+            for arg in expr.args[0].args:
+                if not (isinstance(arg, _IntVarImpl)):
+                    return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
+            # all args are intvars or boolvars
+            positive_expr = expr.args[0]
+            if positive_expr in expr_dict:
+                return -expr_dict[positive_expr], []
+            else:
+                lb, ub = positive_expr.get_bounds()
+                ivar = _IntVarImpl(lb, ub)
+                expr_dict[positive_expr] = ivar
+                return (-ivar, [-positive_expr == -ivar])
+                    
         if expr.name == '-' or (expr.name == 'mul' and _wsum_should(expr)):
             return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
 
@@ -517,17 +533,6 @@ def normalized_numexpr(expr, expr_dict=None):
                         all(isinstance(a, Expression) for a in sub_exprs[i].args)) or \
                      (sub_exprs[i].name == 'wsum' and \
                         all(isinstance(a, Expression) for a in sub_exprs[i].args[1]))):  # TODO: avoid constants for now...
-                    
-                    # if  sub_exprs[i] in expr_dict:
-                    #     return expr_dict[sub_exprs[i]], []
-                    # else:
-                    #     lb, ub = expr.get_bounds()
-
-                    #     ivar = _IntVarImpl(lb, ub)
-                    #     expr_dict[sub_exprs[i]] = ivar
-                    #     #print(ivar)
-                    #     #return (ivar, [expr == ivar])
-                
                     w,e = _wsum_make(sub_exprs[i])
                     # insert in place, and next iteration over same 'i' again
                     weights[i:i+1] = [weights[i]*wj for wj in w]
