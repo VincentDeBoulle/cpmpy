@@ -339,12 +339,13 @@ def get_or_make_var(expr, expr_dict=None):
         # normalize expr into a numexpr LHS,
         # then compute bounds and return (newintvar, LHS == newintvar)
         (flatexpr, flatcons) = normalized_numexpr(expr, expr_dict)
-
         lb, ub = flatexpr.get_bounds()
         ivar = _IntVarImpl(lb, ub)
 
         if flatexpr in expr_dict:
             return expr_dict[flatexpr], []
+        elif isinstance(flatexpr, _IntVarImpl):
+            return flatexpr, []
         else:
             expr_dict[flatexpr] = ivar
         return (ivar, [flatexpr == ivar]+flatcons)
