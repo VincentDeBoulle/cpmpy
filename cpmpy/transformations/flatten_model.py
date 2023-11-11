@@ -345,7 +345,7 @@ def get_or_make_var(expr, expr_dict=None):
         if flatexpr in expr_dict:
             return expr_dict[flatexpr], []
         elif isinstance(flatexpr, _IntVarImpl):
-            return flatexpr, []
+            return flatexpr, flatcons
         else:
             expr_dict[flatexpr] = ivar
         return (ivar, [flatexpr == ivar]+flatcons)
