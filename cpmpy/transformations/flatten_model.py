@@ -134,6 +134,7 @@ def flatten_constraint(expr,expr_dict=None):
     lst_of_expr = toplevel_list(expr)               # ensure it is a list
     lst_of_expr = push_down_negation(lst_of_expr)   # push negation into the arguments to simplify expressions
     lst_of_expr = simplify_boolean(lst_of_expr)     # simplify boolean expressions, and ensure types are correct
+
     for expr in lst_of_expr:
 
         if isinstance(expr, _BoolVarImpl):
@@ -242,7 +243,7 @@ def flatten_constraint(expr,expr_dict=None):
                 else:
                     newlist.append(Comparison(exprname, lexpr, rexpr))
                 continue
-
+            
             # ensure rhs is var
             (rvar, rcons) = get_or_make_var(rexpr, expr_dict)
             # Reification (double implication): Boolexpr == Var
@@ -515,6 +516,17 @@ def normalized_numexpr(expr, expr_dict=None):
                         all(isinstance(a, Expression) for a in sub_exprs[i].args)) or \
                      (sub_exprs[i].name == 'wsum' and \
                         all(isinstance(a, Expression) for a in sub_exprs[i].args[1]))):  # TODO: avoid constants for now...
+                    
+                    # if  sub_exprs[i] in expr_dict:
+                    #     return expr_dict[sub_exprs[i]], []
+                    # else:
+                    #     lb, ub = expr.get_bounds()
+
+                    #     ivar = _IntVarImpl(lb, ub)
+                    #     expr_dict[sub_exprs[i]] = ivar
+                    #     #print(ivar)
+                    #     #return (ivar, [expr == ivar])
+                
                     w,e = _wsum_make(sub_exprs[i])
                     # insert in place, and next iteration over same 'i' again
                     weights[i:i+1] = [weights[i]*wj for wj in w]

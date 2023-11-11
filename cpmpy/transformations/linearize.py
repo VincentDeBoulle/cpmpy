@@ -370,7 +370,9 @@ def order_constraint(lst_of_expr):
     return newlist
 
 def create_sorted_expression(op, args):
-    if op == "sum":
+    if op == "-":
+        return Operator(op, [create_sorted_expression(args[0].name, args[0].args)])
+    elif op == "sum":
         new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
         return Operator(op, new_args)
     elif op == "mul":
