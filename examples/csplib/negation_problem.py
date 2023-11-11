@@ -18,10 +18,9 @@ model += AllDifferent([A, B, C, D, E, F, G])
 model += ((C + B) + (A + D) != C)
 model += (-((C + B) + (A + D)) != C)
 model += (-(A + C + D + B) != -(A * B * D))
-#model += (B + A != C)
+model += (B * A * D != C)
 
-print("model: ", model)
-print("\n")
+
 model.solve()
 
 
