@@ -45,6 +45,7 @@ from .flatten_model import flatten_constraint, get_or_make_var
 from .get_variables import get_variables
 from ..exceptions import TransformationNotImplementedError
 
+from ..expressions.globalfunctions import Abs
 from ..expressions.core import Comparison, Operator, BoolVal
 from ..expressions.globalconstraints import GlobalConstraint, DirectConstraint, alldifferent
 from ..expressions.utils import is_any_list, is_num, eval_comparison, is_bool
@@ -347,6 +348,10 @@ def order_constraint(lst_of_expr):
                 lhs = create_sorted_expression(lhs.name, lhs.args)
             if isinstance(rhs, Operator):
                 rhs = create_sorted_expression(rhs.name, rhs.args)
+            if isinstance(lhs, Abs):
+                lhs = abs(order_expressions(lhs.args[0]))
+            if isinstance(rhs, Abs):
+                rhs = abs(order_expressions(rhs.args[0]))
 
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
 

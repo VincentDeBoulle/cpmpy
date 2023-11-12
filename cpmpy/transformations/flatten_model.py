@@ -348,7 +348,7 @@ def get_or_make_var(expr, expr_dict=None):
             return flatexpr, flatcons
         else:
             expr_dict[flatexpr] = ivar
-        return (ivar, [flatexpr == ivar]+flatcons)
+            return (ivar, [flatexpr == ivar]+flatcons)
 
 def get_or_make_var_or_list(expr, expr_dict=None):
     """ Like get_or_make_var() but also accepts and recursively transforms lists
@@ -559,8 +559,8 @@ def normalized_numexpr(expr, expr_dict=None):
             return (expr, [])
         else:
             # recursively flatten all children
-            flatvars, flatcons = zip(*[get_or_make_var_or_list(arg) for arg in expr.args])
-
+            flatvars, flatcons = zip(*[get_or_make_var_or_list(arg, expr_dict) for arg in expr.args])
+            
             # take copy, replace args
             newexpr = copy.copy(expr) # shallow or deep? currently shallow
             newexpr.args = flatvars
