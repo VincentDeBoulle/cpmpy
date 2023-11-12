@@ -355,17 +355,27 @@ def order_constraint(lst_of_expr):
 
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
 
-        elif isinstance(cpm_expr, Operator) and cpm_expr.name in {"or", "and"}:
-            ordered_expr = []
+        elif isinstance(cpm_expr, Operator):
+            if cpm_expr.name in {"or", "and"}:
+                ordered_expr = []
+                for expr in cpm_expr.args:
+                    ord_expr = order_constraint([expr])
+                    ordered_expr += ord_expr
 
-            for expr in cpm_expr.args:
-                ord_expr = order_constraint([expr])
-                ordered_expr.append(ord_expr)
-
-            if cpm_expr.name == "or":
-                newlist.append(ordered_expr[0] or ordered_expr[1])
+                if cpm_expr.name == "or":
+                    ord_expr = ordered_expr[0]
+                    for e in ordered_expr[1::]:
+                        ord_expr = ord_expr | e
+                    newlist.append(ord_expr)
+                else:
+                    ord_expr = ordered_expr[0]
+                    for e in ordered_expr[1::]:
+                        ord_expr = ord_expr & e
+                    newlist.append(ord_expr)
+            elif cpm_expr.name == "not":
+                newlist.append(Operator('not', order_constraint(cpm_expr.args)))
             else:
-                newlist.append(ordered_expr[0] and ordered_expr[1])
+                newlist.append(cpm_expr)
 
         elif isinstance(cpm_expr, GlobalConstraint) and cpm_expr.name == "alldifferent":
             newlist.append(alldifferent(sorted(cpm_expr.args, key=str)))
