@@ -337,6 +337,7 @@ def order_constraint(lst_of_expr):
 
     newlist = []
     for cpm_expr in lst_of_expr:
+        print('cpm_expr: ', cpm_expr.name)
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
             if (isinstance(lhs, Comparison) or isinstance(rhs, Comparison)) and cpm_expr.name == "==":
@@ -372,8 +373,8 @@ def order_constraint(lst_of_expr):
                     for e in ordered_expr[1::]:
                         ord_expr = ord_expr & e
                     newlist.append(ord_expr)
-            elif cpm_expr.name == "not":
-                newlist.append(Operator('not', order_constraint(cpm_expr.args)))
+            elif cpm_expr.name in {"not", "pow"}:
+                newlist.append(Operator(cpm_expr.name, order_constraint(cpm_expr.args)))
             else:
                 newlist.append(cpm_expr)
 
@@ -390,6 +391,8 @@ def create_sorted_expression(op, args):
     elif op == "sum":
         new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
         return Operator(op, new_args)
+    elif op == "pow":
+        return Operator(op, [order_expressions(args[0]), args[1]])
     elif op == "mul":
         return order_expressions(args[0] * args[1])
     elif op == "div":
