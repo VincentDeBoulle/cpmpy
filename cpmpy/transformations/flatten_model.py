@@ -136,7 +136,6 @@ def flatten_constraint(expr,expr_dict=None):
     lst_of_expr = simplify_boolean(lst_of_expr)     # simplify boolean expressions, and ensure types are correct
 
     for expr in lst_of_expr:
-
         if isinstance(expr, _BoolVarImpl):
             newlist.append(expr)
 
@@ -386,7 +385,6 @@ def normalized_boolexpr(expr, expr_dict = None):
     """
     assert(not __is_flat_var(expr))
     assert(expr.is_bool()) 
-
     if expr_dict is None:
         expr_dict = dict()
 
@@ -507,11 +505,14 @@ def normalized_numexpr(expr, expr_dict=None):
             return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
 
         if all(__is_flat_var(arg) for arg in expr.args):
-            lb, ub = expr.get_bounds()
+            if expr in expr_dict:
+                return expr_dict[expr], []
+            else:
+                lb, ub = expr.get_bounds()
 
-            ivar = _IntVarImpl(lb, ub)
-            expr_dict[expr] = ivar
-            return (ivar, [expr == ivar])
+                ivar = _IntVarImpl(lb, ub)
+                expr_dict[expr] = ivar
+                return (ivar, [expr == ivar])
 
         # pre-process sum, to fold in nested subtractions and const*Exprs, e.g. x - y + 2*(z+r)
         if expr.name == "sum" and \

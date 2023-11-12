@@ -20,6 +20,8 @@ model += (F - C == C) & (B + D == F)
 model += ((A + B + D == G) & (D + C == G)) & (D + B == F)
 model += (B + A) ** 2 == 9
 model += (B + A == 3).implies(C == 3)
+model += (B + A) % B == A
+
 
 model.solve()
 print("A: ", A.value())

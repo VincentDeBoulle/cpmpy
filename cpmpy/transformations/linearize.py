@@ -374,7 +374,7 @@ def order_constraint(lst_of_expr):
                     newlist.append(ord_expr)
             elif cpm_expr.name in {"not", "pow"}:
                 newlist.append(Operator(cpm_expr.name, order_constraint(cpm_expr.args)))
-            elif cpm_expr.name == "->":
+            elif cpm_expr.name in {"->", "mod"}:
                 args = order_constraint(cpm_expr.args)
                 newlist.append(Operator(cpm_expr.name, args))
             else:
@@ -399,6 +399,8 @@ def create_sorted_expression(op, args):
         return order_expressions(args[0] * args[1])
     elif op == "div":
         return order_expressions(args[0] // args[1])
+    elif op == "mod":
+        return order_expressions(args[0]) % order_expressions(args[1])
     elif op == "wsum":
         new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
         if op == "wsum":
