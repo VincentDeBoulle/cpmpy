@@ -18,7 +18,7 @@ model += (A + B == C)
 model += ~((B + E == C) | (A + B == E)) | ~(F - E == A)
 model += ((E - B == C) | (D + A == B)) & (C + D == G)
 model += (F - C == C) & (B + D == F)
-model += ~((A + B + D != G) & (D + C == G)) & (D + B == F)
+model += ((A + B + D == G) & (D + C == G)) & (D + B == F)
 
 model.solve()
 print("A: ", A.value())
