@@ -40,6 +40,7 @@ General comparisons or expressions
 import copy
 import numpy as np
 from cpmpy.transformations.normalize import toplevel_list
+import functools
 
 from .flatten_model import flatten_constraint, get_or_make_var
 from .get_variables import get_variables
@@ -339,11 +340,13 @@ def order_constraint(lst_of_expr):
     for cpm_expr in lst_of_expr:
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
-            if (isinstance(lhs, Comparison) or isinstance(rhs, Comparison)) and cpm_expr.name == "==":
+
+            if cpm_expr.name == "==":
                 if isinstance(lhs, Comparison):
                     lhs = order_constraint(lhs)
                 elif isinstance(rhs, Comparison):
                     rhs = order_constraint(rhs)
+
             if isinstance(lhs, Operator):
                 lhs = create_sorted_expression(lhs.name, lhs.args)
             if isinstance(rhs, Operator):
@@ -356,27 +359,12 @@ def order_constraint(lst_of_expr):
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
 
         elif isinstance(cpm_expr, Operator):
-            if cpm_expr.name in {"or", "and"}:
-                ordered_expr = []
-                for expr in cpm_expr.args:
-                    ord_expr = order_constraint([expr])
-                    ordered_expr += ord_expr
-
-                if cpm_expr.name == "or":
-                    ord_expr = ordered_expr[0]
-                    for e in ordered_expr[1::]:
-                        ord_expr = ord_expr | e
-                    newlist.append(ord_expr)
-                else:
-                    ord_expr = ordered_expr[0]
-                    for e in ordered_expr[1::]:
-                        ord_expr = ord_expr & e
-                    newlist.append(ord_expr)
-            elif cpm_expr.name in {"not", "pow"}:
+            if cpm_expr.name == "or":
+                ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
+                combined_expr = functools.reduce(lambda x, y: x | y, ordered_expr)
+                newlist.append(combined_expr)
+            elif cpm_expr.name in {"not", "pow", "->", "mod"}:
                 newlist.append(Operator(cpm_expr.name, order_constraint(cpm_expr.args)))
-            elif cpm_expr.name in {"->", "mod"}:
-                args = order_constraint(cpm_expr.args)
-                newlist.append(Operator(cpm_expr.name, args))
             else:
                 newlist.append(cpm_expr)
 
