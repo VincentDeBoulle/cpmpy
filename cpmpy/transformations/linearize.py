@@ -337,7 +337,6 @@ def order_constraint(lst_of_expr):
 
     newlist = []
     for cpm_expr in lst_of_expr:
-        print('cpm_expr: ', cpm_expr.name)
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
             if (isinstance(lhs, Comparison) or isinstance(rhs, Comparison)) and cpm_expr.name == "==":
@@ -375,6 +374,9 @@ def order_constraint(lst_of_expr):
                     newlist.append(ord_expr)
             elif cpm_expr.name in {"not", "pow"}:
                 newlist.append(Operator(cpm_expr.name, order_constraint(cpm_expr.args)))
+            elif cpm_expr.name == "->":
+                args = order_constraint(cpm_expr.args)
+                newlist.append(Operator(cpm_expr.name, args))
             else:
                 newlist.append(cpm_expr)
 
