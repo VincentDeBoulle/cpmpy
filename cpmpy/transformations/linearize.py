@@ -333,18 +333,16 @@ def canonical_comparison(lst_of_expr):
     return newlist    
 
 def order_constraint(lst_of_expr):
-    #lst_of_expr = toplevel_list(lst_of_expr)               # ensure it is a list
 
     newlist = []
     for cpm_expr in lst_of_expr:
+        
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
 
             if cpm_expr.name == "==":
-                if isinstance(lhs, Comparison):
-                    lhs = order_constraint(lhs)
-                elif isinstance(rhs, Comparison):
-                    rhs = order_constraint(rhs)
+                lhs = order_constraint(lhs) if isinstance(lhs, Comparison) else lhs
+                rhs = order_constraint(rhs) if isinstance(rhs, Comparison) else rhs
 
             if isinstance(lhs, Operator):
                 lhs = create_sorted_expression(lhs.name, lhs.args)
@@ -358,13 +356,9 @@ def order_constraint(lst_of_expr):
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
 
         elif isinstance(cpm_expr, Operator):
-            if cpm_expr.name == "or":
+            if cpm_expr.name in {"or", "and"}:
                 ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
-                combined_expr = functools.reduce(lambda x, y: x | y, ordered_expr)
-                newlist.append(combined_expr)
-            elif cpm_expr.name == "and":
-                ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
-                combined_expr = functools.reduce(lambda x, y: x & y, ordered_expr)
+                combined_expr = functools.reduce(lambda x, y: x | y if cpm_expr.name == "or" else x & y, ordered_expr)
                 newlist.append(combined_expr)
             elif cpm_expr.name in {"pow", "->", "mod", "not"}:
                 newlist.append(Operator(cpm_expr.name, order_constraint(cpm_expr.args)))
@@ -373,6 +367,7 @@ def order_constraint(lst_of_expr):
 
         elif isinstance(cpm_expr, GlobalConstraint) and cpm_expr.name == "alldifferent":
             newlist.append(alldifferent(sorted(cpm_expr.args, key=str)))
+            
         else:  # rest of expressions
             newlist.append(cpm_expr)
 
@@ -394,13 +389,12 @@ def create_sorted_expression(op, args):
         return order_expressions(args[0]) % order_expressions(args[1])
     elif op == "wsum":
         new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
-        if op == "wsum":
-            str_var = [str(s) + str(e) for s, e in zip(args[0], new_args)]
-            mapping = {s: [args[0][i], new_args[i]] for i, s in enumerate(str_var)}
-            str_var = sorted(str_var)
-            args = [mapping[s][1] for s in str_var]
-            new_weights = [mapping[s][0] for s in str_var]
-            new_args = [new_weights, args]
+        str_var = [str(s) + str(e) for s, e in zip(args[0], new_args)]
+        mapping = {s: [args[0][i], new_args[i]] for i, s in enumerate(str_var)}
+        str_var = sorted(str_var)
+        args = [mapping[s][1] for s in str_var]
+        new_weights = [mapping[s][0] for s in str_var]
+        new_args = [new_weights, args]
         return Operator(op, new_args)
     return Operator(op, args)
 
