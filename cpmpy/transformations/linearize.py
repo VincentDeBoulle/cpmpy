@@ -386,7 +386,7 @@ def create_sorted_expression(op, args):
     elif op == "mul":
         return order_expressions(args[0] * args[1])
     elif op == "div":
-        return order_expressions(args[0] // args[1])
+        return order_expressions(args[0]) // order_expressions(args[1])
     elif op == "mod":
         return order_expressions(args[0]) % order_expressions(args[1])
     elif op == "wsum":
@@ -419,12 +419,6 @@ def order_expressions(expr):
         for element in lst[1::]:
             result *= element
         return result
-    
-    elif expr.name == "div":
-        lhs = order_expressions(expr.args[0])
-        rhs = order_expressions(expr.args[1])
-        return lhs // rhs
-
     else:
         return Operator(expr.name, sorted(expr.args, key=str))
 
@@ -437,7 +431,6 @@ def make_mul_list(expr):
     if isinstance(expr, _NumVarImpl):   # Base case multiplication
         return [expr]
     
-    left = make_mul_list(expr.args[0])
-    right = make_mul_list(expr.args[1])
-    args = left + right
+    args = make_mul_list(expr.args[0])
+    args.extend(make_mul_list(expr.args[1]))
     return args
