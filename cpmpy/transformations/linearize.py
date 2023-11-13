@@ -333,8 +333,7 @@ def canonical_comparison(lst_of_expr):
     return newlist    
 
 def order_constraint(lst_of_expr):
-
-    lst_of_expr = toplevel_list(lst_of_expr)               # ensure it is a list
+    #lst_of_expr = toplevel_list(lst_of_expr)               # ensure it is a list
 
     newlist = []
     for cpm_expr in lst_of_expr:
@@ -363,7 +362,11 @@ def order_constraint(lst_of_expr):
                 ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
                 combined_expr = functools.reduce(lambda x, y: x | y, ordered_expr)
                 newlist.append(combined_expr)
-            elif cpm_expr.name in {"not", "pow", "->", "mod"}:
+            elif cpm_expr.name == "and":
+                ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
+                combined_expr = functools.reduce(lambda x, y: x & y, ordered_expr)
+                newlist.append(combined_expr)
+            elif cpm_expr.name in {"pow", "->", "mod", "not"}:
                 newlist.append(Operator(cpm_expr.name, order_constraint(cpm_expr.args)))
             else:
                 newlist.append(cpm_expr)
