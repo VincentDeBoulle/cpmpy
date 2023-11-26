@@ -378,7 +378,13 @@ def create_sorted_expression(op, args):
         return Operator(op, [create_sorted_expression(args[0].name, args[0].args)])
     elif op == "sum":
         new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
-        return Operator(op, new_args)
+        for arg in new_args:
+            if arg.name == '-':
+                new_args.remove(arg)
+                new_args.remove(arg.args[0])
+        if len(new_args) != 0:
+            return Operator(op, new_args)
+        return 0
     elif op == "pow":
         return Operator(op, [order_expressions(args[0]), args[1]])
     elif op == "mul":
