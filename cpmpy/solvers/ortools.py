@@ -334,18 +334,14 @@ class CPM_ortools(SolverInterface):
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
         #cpm_cons = canonical_comparison(cpm_cons)
-        print(cpm_cons)
         cpm_cons = order_constraint(cpm_cons)
-        print("cpm_cons:", cpm_cons)
         cpm_cons = remove_redundant(cpm_cons)
-        print("cpm_cons after: ", cpm_cons)
         cpm_cons = flatten_constraint(cpm_cons, expr_dict=self.expr_dict)  # flat normal form
         cpm_cons = reify_rewrite(cpm_cons, supported=frozenset(['sum', 'wsum']), expr_dict=self.expr_dict)  # constraints that support reification
         cpm_cons = only_numexpr_equality(cpm_cons, supported=frozenset(["sum", "wsum", "sub"]), expr_dict=self.expr_dict)  # supports >, <, !=
         cpm_cons = only_bv_reifies(cpm_cons, expr_dict=self.expr_dict)
         cpm_cons = only_implies(cpm_cons, expr_dict=self.expr_dict)  # everything that can create
                                              # reified expr must go before this
-        print(self.expr_dict)
         return cpm_cons
 
     def __add__(self, cpm_expr):
