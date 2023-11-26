@@ -378,13 +378,31 @@ def create_sorted_expression(op, args):
         return Operator(op, [create_sorted_expression(args[0].name, args[0].args)])
     elif op == "sum":
         new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
+        new_args_set = set(new_args) # faster to lookup
+
+        negations = set()
+        final_args = []
+
         for arg in new_args:
-            if arg.name == '-':
-                new_args.remove(arg)
-                new_args.remove(arg.args[0])
-        if len(new_args) != 0:
-            return Operator(op, new_args)
-        return 0
+            if type(arg) == int:
+                pass
+            elif arg.name == '-':
+                if arg.args[0] in negations:
+                    continue
+                else:
+                    negations.add(arg.args[0])
+                    if arg.args[0] in new_args_set:
+                        continue
+            else:
+                if arg in negations:
+                    continue
+            final_args.append(arg)
+        if len(final_args) > 1:
+            return Operator(op, sorted(final_args, key=str))
+        elif final_args:
+            return final_args[0]
+        else:
+            return 0
     elif op == "pow":
         return Operator(op, [order_expressions(args[0]), args[1]])
     elif op == "mul":
@@ -408,7 +426,7 @@ def order_expressions(expr):
     """
     Orders an expression alphabetically
     """
-    if isinstance(expr, _BoolVarImpl) or isinstance(expr, _NumVarImpl):
+    if isinstance(expr, (_BoolVarImpl, _NumVarImpl, int)):
             return expr
     if expr.name == "-":
         if isinstance(expr.args[0], _BoolVarImpl) or isinstance(expr.args[0], _NumVarImpl):
@@ -437,3 +455,19 @@ def make_mul_list(expr):
     args = make_mul_list(expr.args[0])
     args.extend(make_mul_list(expr.args[1]))
     return args
+
+def remove_redundant(cpm_cons):
+    """
+    Removes redundant constraints:
+        - left side == right side
+        - 2x the same constraint
+    """
+    return list(set(cpm_cons))
+    for cpm_expr in cpm_cons:
+        if isinstance(cpm_expr, Comparison):
+            lhs, rhs = cpm_expr.args
+
+            if lhs == rhs:
+                print('jeeeeej: ', cpm_expr )
+    
+    return cpm_cons

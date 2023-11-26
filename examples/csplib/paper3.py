@@ -14,7 +14,8 @@ G = intvar(1, 7)
 model = Model()
 model += A + 0 == A
 model += 2 + 2 + 1 == B
-model += B - B == 0
+model += B + C - C + 1 == 6
+model += B + 1 == 6
 
 
 print(model)
