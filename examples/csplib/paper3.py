@@ -17,7 +17,7 @@ model += A + 0 == A
 model += 2 + 2 + 1 == B
 model += B + C - C + 1 == 6
 model += B + 1 == 6
-#model += C * 0 + A + 1 == B
+model += (A + C - D) * 0 == 0
 
 
 print(model)

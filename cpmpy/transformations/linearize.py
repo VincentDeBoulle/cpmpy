@@ -406,8 +406,12 @@ def create_sorted_expression(op, args):
     elif op == "pow":
         return Operator(op, [order_expressions(args[0]), args[1]])
     elif op == "mul":
+        if args[0] == 0 or args[1] == 0:
+            return 0
         return order_expressions(args[0] * args[1])
     elif op == "div":
+        if args[0] == 0:
+            return 0
         return order_expressions(args[0]) // order_expressions(args[1])
     elif op == "mod":
         return order_expressions(args[0]) % order_expressions(args[1])
@@ -449,9 +453,9 @@ def make_mul_list(expr):
     Make a list of all arguments of a multiplication.
     E.g. A * B * (C * D) * E --> [A, B, C, D, E]
     """
-    if isinstance(expr, _NumVarImpl):   # Base case multiplication
+    if isinstance(expr, (_NumVarImpl, int)):   # Base case multiplication
         return [expr]
-    
+
     args = make_mul_list(expr.args[0])
     args.extend(make_mul_list(expr.args[1]))
     return args
@@ -459,10 +463,11 @@ def make_mul_list(expr):
 def remove_redundant(cpm_cons):
     """
     Removes redundant constraints:
+        - 'True'
         - left side == right side
         - 2x the same constraint
     """
-    constraints =  list(set(cpm_cons))
+    constraints =  [i for i in list(set(cpm_cons)) if type(i) != bool or (type(i) == bool and i != True)]
     single_cons = []
 
     for cpm_expr in constraints:
