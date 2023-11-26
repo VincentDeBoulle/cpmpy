@@ -462,12 +462,13 @@ def remove_redundant(cpm_cons):
         - left side == right side
         - 2x the same constraint
     """
-    return list(set(cpm_cons))
-    for cpm_expr in cpm_cons:
+    constraints =  list(set(cpm_cons))
+    single_cons = []
+
+    for cpm_expr in constraints:
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
-
-            if lhs == rhs:
-                print('jeeeeej: ', cpm_expr )
-    
-    return cpm_cons
+            if str(lhs) == str(rhs):
+                continue
+        single_cons.append(cpm_expr)
+    return single_cons

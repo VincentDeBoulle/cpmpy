@@ -12,10 +12,12 @@ F = intvar(1, 7)
 G = intvar(1, 7)
 
 model = Model()
+#model += AllDifferent([A,B,C,D,E,F,G])
 model += A + 0 == A
 model += 2 + 2 + 1 == B
 model += B + C - C + 1 == 6
 model += B + 1 == 6
+#model += C * 0 + A + 1 == B
 
 
 print(model)
