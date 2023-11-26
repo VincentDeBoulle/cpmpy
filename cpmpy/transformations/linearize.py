@@ -404,6 +404,8 @@ def create_sorted_expression(op, args):
         else:
             return 0
     elif op == "pow":
+        if args[0] == 0:
+            return 0
         return Operator(op, [order_expressions(args[0]), args[1]])
     elif op == "mul":
         if args[0] == 0 or args[1] == 0:

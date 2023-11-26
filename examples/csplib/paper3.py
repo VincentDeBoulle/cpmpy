@@ -19,7 +19,6 @@ model += B + C - C + 1 == 6
 model += B + 1 == 6
 model += (A + C - D) * 0 == 0
 
-
 print(model)
 model.solve()
 print("A: ", A.value())

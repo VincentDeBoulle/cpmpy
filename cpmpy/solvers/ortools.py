@@ -334,6 +334,7 @@ class CPM_ortools(SolverInterface):
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
         #cpm_cons = canonical_comparison(cpm_cons)
+        print(cpm_cons)
         cpm_cons = order_constraint(cpm_cons)
         print("cpm_cons:", cpm_cons)
         cpm_cons = remove_redundant(cpm_cons)
