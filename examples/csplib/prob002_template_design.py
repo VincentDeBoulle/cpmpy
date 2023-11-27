@@ -87,6 +87,7 @@ def _print_instances(data):
     print(df_str)
 
 if __name__ == "__main__":
+    nb_iterations = 500
 
     with open('examples/csplib/prob002_template_design.json', 'r') as json_file:
         data = json.load(json_file)
@@ -94,9 +95,9 @@ if __name__ == "__main__":
     problem_names = [problem['name'] for problem in data]
 
     tablesp_ortools =  PrettyTable(['Problem instance', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = 'Results of the Template Design problem with CSE (average of 10 iterations)'
+    tablesp_ortools.title = f'Results of the Template Design problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE =  PrettyTable(['Problem instance', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the Template Design problem without CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE.title = f'Results of the Template Design problem without CSE (average of {nb_iterations} iterations)'
 
     for name in problem_names:
         # argument parsing
@@ -126,14 +127,10 @@ if __name__ == "__main__":
             model, (production, layout) = template_design(**problem_params)
             model_creation_time = timeit.default_timer() - start_model_time
 
-            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=30)
+            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr)
             if ret:
                 print("Solved this problem")
                 return model_creation_time, transform_time, solve_time, num_branches
-                
-            elif model.status().runtime > 29:
-                print("This problem passes the time limit")
-                return 408, 408, 408, 408
             else:
                 print("Model is unsatisfiable!")
                 return 404, 404, 404, 404
@@ -145,7 +142,7 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(10):
+            for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
@@ -163,11 +160,11 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
             
-            average_model_creation_time = total_model_creation_time / 10
-            average_transform_time = total_transform_time / 10
-            average_solve_time = total_solve_time / 10
-            average_execution_time = total_execution_time / 10
-            average_num_branches = total_num_branches / 10
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])

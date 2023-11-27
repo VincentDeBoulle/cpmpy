@@ -384,7 +384,7 @@ def create_sorted_expression(op, args):
         final_args = []
 
         for arg in new_args:
-            if type(arg) == int:
+            if type(arg) in (int, np.int64):
                 pass
             elif arg.name == '-':
                 if arg.args[0] in negations:
