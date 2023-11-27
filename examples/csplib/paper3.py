@@ -14,12 +14,12 @@ G = intvar(1, 7)
 model = Model()
 #model += AllDifferent([A,B,C,D,E,F,G])
 #model += A + 0 == A
-#model += 2 + 2 + 1 == B
+#model += 2 + 2 + 1 + E == B
 #model += B + C - C + 1 == 6
 #model += B + 1 == 6
 #model += (A + C - D) * 0 == 0
 #model += A * 1 + B == A + B
-model += A + B * C == 0
+model += A + B * C == 6
 model += B * C + D == 10
 
 
