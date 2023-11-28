@@ -123,7 +123,6 @@ def flatten_constraint(expr,expr_dict=None):
         RE TODO: we now have custom NotImpl/NotSupported
     """
     from ..expressions.globalconstraints import GlobalConstraint  # avoid circular import
-
     if expr_dict is None:
         expr_dict = dict()
 
@@ -390,7 +389,6 @@ def normalized_boolexpr(expr, expr_dict = None):
 
     if isinstance(expr, Operator):
         # and, or, ->
-
         # apply De Morgan's transform for "implies"
         if expr.name == '->':
             # TODO, optimisation if args0 is an 'and'?
@@ -402,7 +400,24 @@ def normalized_boolexpr(expr, expr_dict = None):
             flatvar, flatcons = get_or_make_var(expr.args[0], expr_dict)
             return (~flatvar, flatcons)
         if all(__is_flat_var(arg) for arg in expr.args):
-            return (expr, [])
+            #if all(type(expr.args[i]) == NegBoolView for i in range(len(expr.args))):
+            #    if expr.name == "or":
+            #        pos_expr = ~expr.args[0] & ~expr.args[1]  # De Morgan's law (~A or ~B -> ~(A and B)  => We're only interested in the positive part)
+            #        print("pexpr: ", ~pos_expr)
+            #        if pos_expr in expr_dict:
+            #            return ~pos_expr, []
+            #        else:
+            #            bvar = _BoolVarImpl()
+            #            expr_dict[pos_expr] = bvar
+            #            return (~bvar, [~pos_expr == ~bvar])
+            print("expr:: ", expr)
+            if expr in expr_dict:
+                return expr, []
+            else:
+                bvar = _BoolVarImpl()
+                expr_dict[expr] = bvar
+                return (bvar, [expr == bvar])
+            #return (expr, [])
         else:
             # one of the arguments is not flat, flatten all
             flatvars, flatcons = zip(*[get_or_make_var(arg, expr_dict) for arg in expr.args])
