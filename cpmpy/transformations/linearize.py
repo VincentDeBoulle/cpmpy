@@ -40,11 +40,13 @@ General comparisons or expressions
 import copy
 import numpy as np
 from cpmpy.transformations.normalize import toplevel_list
+import functools
 
 from .flatten_model import flatten_constraint, get_or_make_var
 from .get_variables import get_variables
 from ..exceptions import TransformationNotImplementedError
 
+from ..expressions.globalfunctions import Abs
 from ..expressions.core import Comparison, Operator, BoolVal
 from ..expressions.globalconstraints import GlobalConstraint, DirectConstraint, alldifferent
 from ..expressions.utils import is_any_list, is_num, eval_comparison, is_bool
@@ -332,60 +334,67 @@ def canonical_comparison(lst_of_expr):
 
 def order_constraint(lst_of_expr):
 
-    lst_of_expr = toplevel_list(lst_of_expr)               # ensure it is a list
-
     newlist = []
     for cpm_expr in lst_of_expr:
+        
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
-            if (isinstance(lhs, Comparison) or isinstance(rhs, Comparison)) and cpm_expr.name == "==":
-                if isinstance(lhs, Comparison):
-                    lhs = order_constraint(lhs)
-                elif isinstance(rhs, Comparison):
-                    rhs = order_constraint(rhs)
+
+            if cpm_expr.name == "==":
+                lhs = order_constraint(lhs) if isinstance(lhs, Comparison) else lhs
+                rhs = order_constraint(rhs) if isinstance(rhs, Comparison) else rhs
+
             if isinstance(lhs, Operator):
                 lhs = create_sorted_expression(lhs.name, lhs.args)
             if isinstance(rhs, Operator):
                 rhs = create_sorted_expression(rhs.name, rhs.args)
+            if isinstance(lhs, Abs):
+                lhs = abs(order_expressions(lhs.args[0]))
+            if isinstance(rhs, Abs):
+                rhs = abs(order_expressions(rhs.args[0]))
 
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
 
-        elif isinstance(cpm_expr, Operator) and cpm_expr.name in {"or", "and"}:
-            ordered_expr = []
-
-            for expr in cpm_expr.args:
-                ord_expr = order_constraint([expr])
-                ordered_expr.append(ord_expr)
-
-            if cpm_expr.name == "or":
-                newlist.append(ordered_expr[0] or ordered_expr[1])
+        elif isinstance(cpm_expr, Operator):
+            if cpm_expr.name in {"or", "and"}:
+                ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
+                combined_expr = functools.reduce(lambda x, y: x | y if cpm_expr.name == "or" else x & y, ordered_expr)
+                newlist.append(combined_expr)
+            elif cpm_expr.name in {"pow", "->", "mod", "not"}:
+                newlist.append(Operator(cpm_expr.name, order_constraint(cpm_expr.args)))
             else:
-                newlist.append(ordered_expr[0] and ordered_expr[1])
+                newlist.append(cpm_expr)
 
         elif isinstance(cpm_expr, GlobalConstraint) and cpm_expr.name == "alldifferent":
             newlist.append(alldifferent(sorted(cpm_expr.args, key=str)))
+            
         else:  # rest of expressions
             newlist.append(cpm_expr)
 
     return newlist
 
 def create_sorted_expression(op, args):
-    if op == "sum":
+    if op == "-":
+        return Operator(op, [create_sorted_expression(args[0].name, args[0].args)])
+    elif op == "sum":
         new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
         return Operator(op, new_args)
+    elif op == "pow":
+        return Operator(op, [order_expressions(args[0]), args[1]])
     elif op == "mul":
         return order_expressions(args[0] * args[1])
     elif op == "div":
-        return order_expressions(args[0] // args[1])
+        return order_expressions(args[0]) // order_expressions(args[1])
+    elif op == "mod":
+        return order_expressions(args[0]) % order_expressions(args[1])
     elif op == "wsum":
         new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
-        if op == "wsum":
-            str_var = [str(s) + str(e) for s, e in zip(args[0], new_args)]
-            mapping = {s: [args[0][i], new_args[i]] for i, s in enumerate(str_var)}
-            str_var = sorted(str_var)
-            args = [mapping[s][1] for s in str_var]
-            new_weights = [mapping[s][0] for s in str_var]
-            new_args = [new_weights, args]
+        str_var = [str(s) + str(e) for s, e in zip(args[0], new_args)]
+        mapping = {s: [args[0][i], new_args[i]] for i, s in enumerate(str_var)}
+        str_var = sorted(str_var)
+        args = [mapping[s][1] for s in str_var]
+        new_weights = [mapping[s][0] for s in str_var]
+        new_args = [new_weights, args]
         return Operator(op, new_args)
     return Operator(op, args)
 
@@ -407,12 +416,6 @@ def order_expressions(expr):
         for element in lst[1::]:
             result *= element
         return result
-    
-    elif expr.name == "div":
-        lhs = order_expressions(expr.args[0])
-        rhs = order_expressions(expr.args[1])
-        return lhs // rhs
-
     else:
         return Operator(expr.name, sorted(expr.args, key=str))
 
@@ -425,7 +428,6 @@ def make_mul_list(expr):
     if isinstance(expr, _NumVarImpl):   # Base case multiplication
         return [expr]
     
-    left = make_mul_list(expr.args[0])
-    right = make_mul_list(expr.args[1])
-    args = left + right
+    args = make_mul_list(expr.args[0])
+    args.extend(make_mul_list(expr.args[1]))
     return args

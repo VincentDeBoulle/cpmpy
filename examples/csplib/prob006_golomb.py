@@ -55,14 +55,14 @@ def golomb(size=10):
 if __name__ == "__main__":
     import argparse
 
-    nb_iterations = 50
+    nb_iterations = 100
 
     tablesp_ortools = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
     tablesp_ortools.title = f'OR-Tools: Results of the Golomb problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
     tablesp_ortools_noCSE.title = f'OR-Tools: Results of the Golomb problem without CSE (average of {nb_iterations} iterations)'
 
-    for sz in range(8, 20):
+    for sz in range(10, 26):
 
         parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-size", type=int, default=sz, help="Size of the ruler")

@@ -58,7 +58,7 @@ if __name__ == "__main__":
     tablesp_ortools_noCSE =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools_noCSE.title = f'Results of the Number Partitioning problem without CSE (average of {nb_iterations} iterations)'    
 
-    for nb in range(20,101,10):
+    for nb in range(20,201,10):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Amount of numbers to partition")
 

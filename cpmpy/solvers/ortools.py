@@ -341,6 +341,7 @@ class CPM_ortools(SolverInterface):
         cpm_cons = only_bv_reifies(cpm_cons, expr_dict=self.expr_dict)
         cpm_cons = only_implies(cpm_cons, expr_dict=self.expr_dict)  # everything that can create
                                              # reified expr must go before this
+        #print(cpm_cons)
         print(self.expr_dict)
         return cpm_cons
 
@@ -472,8 +473,6 @@ class CPM_ortools(SolverInterface):
                 return self.ort_model.AddAllowedAssignments(array, table)
             elif cpm_expr.name == "cumulative":
                 start, dur, end, demand, cap = self.solver_vars(cpm_expr.args)
-                if is_num(demand):
-                    demand = [demand] * len(start)
                 intervals = [self.ort_model.NewIntervalVar(s,d,e,f"interval_{s}-{d}-{e}") for s,d,e in zip(start,dur,end)]
                 return self.ort_model.AddCumulative(intervals, demand, cap)
             elif cpm_expr.name == "circuit":
@@ -482,7 +481,7 @@ class CPM_ortools(SolverInterface):
                 # (see PCTSP-path model in the future)
                 x = cpm_expr.args
                 N = len(x)
-                arcvars = boolvar(shape=(N,N), name="circuit_arcs")
+                arcvars = boolvar(shape=(N,N))
                 # post channeling constraints from int to bool
                 self += [b == (x[i] == j) for (i,j),b in np.ndenumerate(arcvars)]
                 # post the global constraint
@@ -568,7 +567,7 @@ class CPM_ortools(SolverInterface):
             'search_branching': [0,1,2,3,4,5,6],
             'boolean_encoding_level' : [0,1,2,3],
             'linearization_level': [0, 1, 2],
-            'minimize_core' : [False, True],
+            'core_minimization_level' : [0,1,2], # new in OR-tools>=v9.8
             'cp_model_probing_level': [0, 1, 2, 3],
             'cp_model_presolve' : [False, True],
             'clause_cleanup_ordering' : [0,1],
@@ -585,7 +584,7 @@ class CPM_ortools(SolverInterface):
             'search_branching': 0,
             'boolean_encoding_level': 1,
             'linearization_level': 1,
-            'minimize_core': True,
+            'core_minimization_level': 2,# new in OR-tools>=v9.8
             'cp_model_probing_level': 2,
             'cp_model_presolve': True,
             'clause_cleanup_ordering': 0,

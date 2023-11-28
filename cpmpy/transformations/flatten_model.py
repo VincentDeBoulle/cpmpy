@@ -134,7 +134,9 @@ def flatten_constraint(expr,expr_dict=None):
     lst_of_expr = toplevel_list(expr)               # ensure it is a list
     lst_of_expr = push_down_negation(lst_of_expr)   # push negation into the arguments to simplify expressions
     lst_of_expr = simplify_boolean(lst_of_expr)     # simplify boolean expressions, and ensure types are correct
+
     for expr in lst_of_expr:
+
         if isinstance(expr, _BoolVarImpl):
             newlist.append(expr)
 
@@ -241,7 +243,7 @@ def flatten_constraint(expr,expr_dict=None):
                 else:
                     newlist.append(Comparison(exprname, lexpr, rexpr))
                 continue
-
+            
             # ensure rhs is var
             (rvar, rcons) = get_or_make_var(rexpr, expr_dict)
             # Reification (double implication): Boolexpr == Var
@@ -340,7 +342,6 @@ def get_or_make_var(expr, expr_dict=None):
         # normalize expr into a numexpr LHS,
         # then compute bounds and return (newintvar, LHS == newintvar)
         (flatexpr, flatcons) = normalized_numexpr(expr, expr_dict)
-
         lb, ub = flatexpr.get_bounds()
         ivar = _IntVarImpl(lb, ub)
 
@@ -350,7 +351,7 @@ def get_or_make_var(expr, expr_dict=None):
             return flatexpr, flatcons
         else:
             expr_dict[flatexpr] = ivar
-        return (ivar, [flatexpr == ivar]+flatcons)
+            return (ivar, [flatexpr == ivar]+flatcons)
 
 def get_or_make_var_or_list(expr, expr_dict=None):
     """ Like get_or_make_var() but also accepts and recursively transforms lists
@@ -388,7 +389,6 @@ def normalized_boolexpr(expr, expr_dict = None):
     """
     assert(not __is_flat_var(expr))
     assert(expr.is_bool()) 
-
     if expr_dict is None:
         expr_dict = dict()
 
@@ -489,20 +489,31 @@ def normalized_numexpr(expr, expr_dict=None, single_expr=None):
 
     elif isinstance(expr, Operator):
         # rewrite -a, const*a and a*const into a weighted sum, so it can be used as objective
+        if expr.name == '-':
+            if isinstance(expr.args[0], _IntVarImpl):
+                return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
+            for arg in expr.args[0].args:
+                if not (isinstance(arg, _IntVarImpl)):
+                    return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
+            # all args are intvars or boolvars
+            positive_expr = expr.args[0]
+            if positive_expr in expr_dict:
+                return -expr_dict[positive_expr], []
+            else:
+                lb, ub = positive_expr.get_bounds()
+                ivar = _IntVarImpl(lb, ub)
+                expr_dict[positive_expr] = ivar
+                return (-ivar, [-positive_expr == -ivar])
+                    
         if expr.name == '-' or (expr.name == 'mul' and _wsum_should(expr)):
             return normalized_numexpr(Operator("wsum", _wsum_make(expr)), expr_dict)
 
         if all(__is_flat_var(arg) for arg in expr.args):
-            if expr in expr_dict:
-                return expr_dict[expr], []
-            elif single_expr:
-                expr_dict[expr] = single_expr
-                return expr, []
             lb, ub = expr.get_bounds()
 
-            ivar = _IntVarImpl(lb, ub)
-            expr_dict[expr] = ivar
-            return (ivar, [expr == ivar])
+                ivar = _IntVarImpl(lb, ub)
+                expr_dict[expr] = ivar
+                return (ivar, [expr == ivar])
 
         # pre-process sum, to fold in nested subtractions and const*Exprs, e.g. x - y + 2*(z+r)
         if expr.name == "sum" and \
@@ -541,7 +552,15 @@ def normalized_numexpr(expr, expr_dict=None, single_expr=None):
             flatvars, flatcons = zip(*[get_or_make_var(arg, expr_dict) for arg in expr.args])
 
             newexpr = Operator(expr.name, flatvars)
-            return (newexpr, [c for con in flatcons for c in con])
+            if newexpr in expr_dict:
+                return expr_dict[newexpr], []
+            else:
+                lb, ub = newexpr.get_bounds()
+
+                ivar = _IntVarImpl(lb, ub)
+                expr_dict[newexpr] = ivar
+
+            return (ivar, [c for con in flatcons for c in con] + [newexpr == ivar])
     else:
         # Globalfunction (examples: Max,Min,Element)
 
@@ -550,8 +569,8 @@ def normalized_numexpr(expr, expr_dict=None, single_expr=None):
             return (expr, [])
         else:
             # recursively flatten all children
-            flatvars, flatcons = zip(*[get_or_make_var_or_list(arg) for arg in expr.args])
-
+            flatvars, flatcons = zip(*[get_or_make_var_or_list(arg, expr_dict) for arg in expr.args])
+            
             # take copy, replace args
             newexpr = copy.copy(expr) # shallow or deep? currently shallow
             newexpr.args = flatvars
