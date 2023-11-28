@@ -136,6 +136,7 @@ def flatten_constraint(expr,expr_dict=None):
     lst_of_expr = simplify_boolean(lst_of_expr)     # simplify boolean expressions, and ensure types are correct
 
     for expr in lst_of_expr:
+
         if isinstance(expr, _BoolVarImpl):
             newlist.append(expr)
 
