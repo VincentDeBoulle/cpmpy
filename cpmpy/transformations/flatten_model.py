@@ -136,6 +136,7 @@ def flatten_constraint(expr,expr_dict=None):
     lst_of_expr = simplify_boolean(lst_of_expr)     # simplify boolean expressions, and ensure types are correct
 
     for expr in lst_of_expr:
+
         if isinstance(expr, _BoolVarImpl):
             newlist.append(expr)
 
@@ -250,7 +251,10 @@ def flatten_constraint(expr,expr_dict=None):
             if exprname == '==' and lexpr.is_bool():
                 (lhs, lcons) = normalized_boolexpr(lexpr, expr_dict)
             else:
-                (lhs, lcons) = normalized_numexpr(lexpr, expr_dict)
+                if __is_flat_var(rexpr):
+                    (lhs, lcons) = normalized_numexpr(lexpr, expr_dict, rexpr)
+                else:
+                    (lhs, lcons) = normalized_numexpr(lexpr, expr_dict)
 
             newlist.append(Comparison(exprname, lhs, rvar))
             newlist.extend(lcons)
@@ -457,7 +461,7 @@ def normalized_boolexpr(expr, expr_dict = None):
             return (newexpr, [c for con in flatcons for c in con])
 
 
-def normalized_numexpr(expr, expr_dict=None):
+def normalized_numexpr(expr, expr_dict=None, single_expr=None):
     """
         all 'flat normal form' numeric expressions...
 
@@ -507,6 +511,9 @@ def normalized_numexpr(expr, expr_dict=None):
         if all(__is_flat_var(arg) for arg in expr.args):
             if expr in expr_dict:
                 return expr_dict[expr], []
+            elif single_expr:
+                expr_dict[expr] = single_expr
+                return expr, []
             else:
                 lb, ub = expr.get_bounds()
 
