@@ -336,7 +336,6 @@ def order_constraint(lst_of_expr):
 
     newlist = []
     for cpm_expr in lst_of_expr:
-        
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
 
@@ -354,7 +353,7 @@ def order_constraint(lst_of_expr):
                 rhs = abs(order_expressions(rhs.args[0]))
 
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
-
+    
         elif isinstance(cpm_expr, Operator):
             if cpm_expr.name in {"or", "and"}:
                 ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
@@ -370,7 +369,6 @@ def order_constraint(lst_of_expr):
             
         else:  # rest of expressions
             newlist.append(cpm_expr)
-
     return newlist
 
 def create_sorted_expression(op, args):
@@ -404,15 +402,15 @@ def create_sorted_expression(op, args):
         else:
             return 0
     elif op == "pow":
-        if args[0] == 0:
+        if type(args[0]) == int and args[0] == 0:
             return 0
         return Operator(op, [order_expressions(args[0]), args[1]])
     elif op == "mul":
-        if args[0] == 0 or args[1] == 0:
+        if (type(args[0]) == int and args[0] == 0) or type(args[1]) == int and args[1] == 0:
             return 0
         return order_expressions(args[0] * args[1])
     elif op == "div":
-        if args[0] == 0:
+        if type(args[0]) == int and args[0] == 0:
             return 0
         return order_expressions(args[0]) // order_expressions(args[1])
     elif op == "mod":
