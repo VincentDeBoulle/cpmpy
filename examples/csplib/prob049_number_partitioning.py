@@ -51,7 +51,7 @@ def number_partitioning(n=8):
 if __name__ == "__main__":
     import argparse
 
-    nb_iterations = 10
+    nb_iterations = 100
 
     tablesp_ortools =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools.title = f'Results of the Number Partitioning problem with CSE (average of {nb_iterations} iterations)'
