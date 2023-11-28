@@ -510,10 +510,9 @@ def normalized_numexpr(expr, expr_dict=None, single_expr=None):
 
         if all(__is_flat_var(arg) for arg in expr.args):
             lb, ub = expr.get_bounds()
-
-                ivar = _IntVarImpl(lb, ub)
-                expr_dict[expr] = ivar
-                return (ivar, [expr == ivar])
+            ivar = _IntVarImpl(lb, ub)
+            expr_dict[expr] = ivar
+            return (ivar, [expr == ivar])
 
         # pre-process sum, to fold in nested subtractions and const*Exprs, e.g. x - y + 2*(z+r)
         if expr.name == "sum" and \
