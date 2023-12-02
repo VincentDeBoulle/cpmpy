@@ -425,9 +425,27 @@ def make_mul_list(expr):
     Make a list of all arguments of a multiplication.
     E.g. A * B * (C * D) * E --> [A, B, C, D, E]
     """
-    if isinstance(expr, _NumVarImpl):   # Base case multiplication
+    if isinstance(expr, (_NumVarImpl, int)):   # Base case multiplication
         return [expr]
     
     args = make_mul_list(expr.args[0])
     args.extend(make_mul_list(expr.args[1]))
     return args
+
+def remove_redundant(cpm_cons):
+    """
+    Removes redundant constraints:
+        - 'True'
+        - left side == right side
+        - 2x the same constraint
+    """
+    constraints =  [i for i in list(set(cpm_cons)) if type(i) != bool or (type(i) == bool and i != True)]
+    single_cons = []
+
+    for cpm_expr in constraints:
+        if isinstance(cpm_expr, Comparison):
+            lhs, rhs = cpm_expr.args
+            if str(lhs) == str(rhs):
+                continue
+        single_cons.append(cpm_expr)
+    return single_cons
