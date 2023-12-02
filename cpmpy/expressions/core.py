@@ -259,9 +259,28 @@ class Expression(object):
     # Mathematical Operators, including 'r'everse if it exists
     # Addition
     def __add__(self, other):
+        if type(self) == Operator:
+            neg_other = self.get_negation(other)
+            if neg_other in self.args:
+                self.args.remove(neg_other)
+                if len(self.args) == 0:
+                    return 0
+                if len(self.args) == 1:
+                    return self.args[0]
+                return self
+        else:
+            neg_other = self.get_negation(other)
+            if str(neg_other) == str(self):
+                return 0
         if is_num(other) and other == 0:
             return self
         return Operator("sum", [self, other])
+    
+    # Returns the negation of a variable
+    def get_negation(self, variable):
+        if variable.name == '-':
+            return variable.args[0]
+        return Operator('-', [variable])
 
     def __radd__(self, other):
         if is_num(other) and other == 0:
