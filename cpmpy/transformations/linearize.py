@@ -400,7 +400,7 @@ def order_expressions(expr):
     """
     Orders an expression alphabetically
     """
-    if isinstance(expr, (_BoolVarImpl, _NumVarImpl, int)):
+    if isinstance(expr, (_BoolVarImpl, _NumVarImpl, int, float)):
             return expr
     if expr.name == "-":
         if isinstance(expr.args[0], _BoolVarImpl) or isinstance(expr.args[0], _NumVarImpl):

@@ -260,14 +260,20 @@ class Expression(object):
     # Addition
     def __add__(self, other):
         if type(self) == Operator:
-            neg_other = self.get_negation(other)
-            if str(neg_other) in [str(a) for a in self.args]:
-                self.args.remove(neg_other)
-                if len(self.args) == 0:
-                    return 0
-                if len(self.args) == 1:
-                    return self.args[0]
-                return self
+            if not is_num(other):
+                neg_other = self.get_negation(other)
+                if str(neg_other) in [str(a) for a in self.args]:
+                    self.args.remove(neg_other)
+                    if len(self.args) == 0:
+                        return 0
+                    if len(self.args) == 1:
+                        return self.args[0]
+                    return self
+            else:
+                if any(is_num(a) for a in self.args):
+                    self.args = [i if not is_num(i) else i + other for i in self.args]
+                    print(self.args)
+                    return self
         else:
             neg_other = self.get_negation(other)
             if str(neg_other) == str(self):
