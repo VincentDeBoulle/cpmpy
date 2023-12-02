@@ -261,7 +261,7 @@ class Expression(object):
     def __add__(self, other):
         if type(self) == Operator:
             neg_other = self.get_negation(other)
-            if neg_other in self.args:
+            if str(neg_other) in [str(a) for a in self.args]:
                 self.args.remove(neg_other)
                 if len(self.args) == 0:
                     return 0

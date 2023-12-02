@@ -23,7 +23,7 @@ model += A * B * C *D == D * C * B * A
 model += (((A * B) * C) * D) == (A * ((B * C) * D))
 model += ((((A + B) == C) & (D == 4)) & ((B + C == E) & ((A == 1) & (B == 2)))) & (B + A == C)
 
-#print(model)
+print(model)
 
 model.solve()
 print("A: ", A.value())
