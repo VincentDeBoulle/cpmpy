@@ -308,6 +308,8 @@ class Expression(object):
     
     # multiplication, puts the 'constant' (other) first
     def __mul__(self, other):
+        if str(other) == str(1 // self) or str(self) == str(1 // other):
+            return 1
         if is_num(other):
             if other == 0:
                 return 0

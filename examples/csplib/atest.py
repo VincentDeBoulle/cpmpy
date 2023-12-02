@@ -11,6 +11,6 @@ D = intvar(1, 7)
 
 model = Model()
 
-model += A == 2 + C + B + 4 // (1 + 1)
+model += 1 == A * B - C
 print(model)
 model.solve()
