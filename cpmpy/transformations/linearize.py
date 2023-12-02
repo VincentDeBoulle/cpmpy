@@ -425,9 +425,17 @@ def make_mul_list(expr):
     Make a list of all arguments of a multiplication.
     E.g. A * B * (C * D) * E --> [A, B, C, D, E]
     """
-    if isinstance(expr, _NumVarImpl):   # Base case multiplication
+    if isinstance(expr, (_NumVarImpl, int)):   # Base case multiplication
         return [expr]
-    
+
     args = make_mul_list(expr.args[0])
-    args.extend(make_mul_list(expr.args[1]))
+
+    second_arg = expr.args[1]
+    if isinstance(second_arg, Operator):
+        if second_arg.name == "mul":
+            args.extend(make_mul_list(second_arg))
+        else:
+            args.extend([second_arg])
+    else:
+        args.extend(make_mul_list(second_arg))
     return args
