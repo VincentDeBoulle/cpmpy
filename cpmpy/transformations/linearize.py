@@ -457,8 +457,17 @@ def make_mul_list(expr):
         return [expr]
 
     args = make_mul_list(expr.args[0])
-    args.extend(make_mul_list(expr.args[1]))
+
+    second_arg = expr.args[1]
+    if isinstance(second_arg, Operator):
+        if second_arg.name == "mul":
+            args.extend(make_mul_list(second_arg))
+        else:
+            args.extend([second_arg])
+    else:
+        args.extend(make_mul_list(second_arg))
     return args
+
 
 def remove_redundant(cpm_cons):
     """
