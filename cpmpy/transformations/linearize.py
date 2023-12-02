@@ -336,10 +336,8 @@ def order_constraint(lst_of_expr):
 
     newlist = []
     for cpm_expr in lst_of_expr:
-        
         if isinstance(cpm_expr, Comparison):
             lhs, rhs = cpm_expr.args
-
             if cpm_expr.name == "==":
                 lhs = order_constraint(lhs) if isinstance(lhs, Comparison) else lhs
                 rhs = order_constraint(rhs) if isinstance(rhs, Comparison) else rhs
@@ -427,9 +425,17 @@ def make_mul_list(expr):
     """
     if isinstance(expr, (_NumVarImpl, int)):   # Base case multiplication
         return [expr]
-    
+
     args = make_mul_list(expr.args[0])
-    args.extend(make_mul_list(expr.args[1]))
+
+    second_arg = expr.args[1]
+    if isinstance(second_arg, Operator):
+        if second_arg.name == "mul":
+            args.extend(make_mul_list(second_arg))
+        else:
+            args.extend([second_arg])
+    else:
+        args.extend(make_mul_list(second_arg))
     return args
 
 def remove_redundant(cpm_cons):
