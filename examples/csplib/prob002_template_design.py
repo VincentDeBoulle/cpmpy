@@ -88,15 +88,17 @@ def _print_instances(data):
 
 if __name__ == "__main__":
 
+    nb_iterations = 100
+
     with open('examples/csplib/prob002_template_design.json', 'r') as json_file:
         data = json.load(json_file)
 
     problem_names = [problem['name'] for problem in data]
 
     tablesp_ortools =  PrettyTable(['Problem instance', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = 'Results of the Template Design problem with CSE (average of 10 iterations)'
+    tablesp_ortools.title = f'Results of the Template Design problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE =  PrettyTable(['Problem instance', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the Template Design problem without CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE.title = f'Results of the Template Design problem without CSE (average of {nb_iterations} iterations)'
 
     for name in problem_names:
         # argument parsing
@@ -145,7 +147,7 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(10):
+            for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
@@ -163,11 +165,11 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
             
-            average_model_creation_time = total_model_creation_time / 10
-            average_transform_time = total_transform_time / 10
-            average_solve_time = total_solve_time / 10
-            average_execution_time = total_execution_time / 10
-            average_num_branches = total_num_branches / 10
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])

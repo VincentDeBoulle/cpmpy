@@ -52,13 +52,15 @@ def sport_scheduling(n_teams):
 if __name__ == "__main__":
     import argparse
 
+    nb_iterations = 100
+
     tablesp = PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
     tablesp_ortools =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = 'Results of the Sport Scheduling problem with CSE (average of 10 iterations)'
+    tablesp_ortools.title = f'Results of the Sport Scheduling problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the Sport Scheduling problem without CSE (average of 10 iterations)'    
+    tablesp_ortools_noCSE.title = f'Results of the Sport Scheduling problem without CSE (average of {nb_iterations} iterations)'    
 
-    for nb in range(2,21,2):
+    for nb in range(8,21,2):
         print('\n number: {}'.format(nb))
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n_teams", type=int, default=nb, help="Number of teams to schedule")
@@ -85,7 +87,7 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(10):
+            for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
@@ -103,11 +105,11 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
 
-            average_model_creation_time = total_model_creation_time / 10
-            average_transform_time = total_transform_time / 10
-            average_solve_time = total_solve_time / 10
-            average_execution_time = total_execution_time / 10
-            average_num_branches = total_num_branches / 10
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations 
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])

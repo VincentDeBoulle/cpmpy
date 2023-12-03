@@ -42,10 +42,12 @@ def PAF(arr, s):
 
 if __name__ == "__main__":
 
+    nb_iterations = 100
+
     tablesp_ortools = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = 'Results of the Auto Correlation problem with CSE (average of 10 iterations)'
+    tablesp_ortools.title = f'Results of the Auto Correlation problem with CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_noCSE = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the Auto Correlation problem without CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE.title = f'Results of the Auto Correlation problem without CSE (average of {nb_iterations} iterations)'
 
 
     for lngth in range(10, 25):
@@ -73,7 +75,7 @@ if __name__ == "__main__":
             total_execution_time = 0
             total_num_branches = 0
 
-            for lp in range(10):
+            for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
@@ -91,11 +93,11 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
 
-            average_model_creation_time = total_model_creation_time / 10
-            average_transform_time = total_transform_time / 10
-            average_solve_time = total_solve_time / 10
-            average_execution_time = total_execution_time / 10
-            average_num_branches = total_num_branches / 10
+            average_model_creation_time = total_model_creation_time / nb_iterations
+            average_transform_time = total_transform_time / nb_iterations
+            average_solve_time = total_solve_time / nb_iterations
+            average_execution_time = total_execution_time / nb_iterations
+            average_num_branches = total_num_branches / nb_iterations
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([length, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
