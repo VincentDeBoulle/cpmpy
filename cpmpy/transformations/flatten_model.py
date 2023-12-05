@@ -132,7 +132,7 @@ def flatten_constraint(expr,expr_dict=None):
     # transformation, that calls (preceding) transformations itself
     # e.g. `toplevel_list()` ensures it is a list
     lst_of_expr = toplevel_list(expr)               # ensure it is a list
-    lst_of_expr = push_down_negation(lst_of_expr)   # push negation into the arguments to simplify expressions
+    #lst_of_expr = push_down_negation(lst_of_expr)   # push negation into the arguments to simplify expressions
     lst_of_expr = simplify_boolean(lst_of_expr)     # simplify boolean expressions, and ensure types are correct
 
     for expr in lst_of_expr:
@@ -149,7 +149,9 @@ def flatten_constraint(expr,expr_dict=None):
             """
             # does not type-check that arguments are bool... Could do now with expr.is_bool()!
             if all(__is_flat_var(arg) for arg in expr.args):
-                newlist.append(expr)
+                new_expr, new_cons = normalized_boolexpr(expr, expr_dict)
+                newlist.append(new_expr)
+                newlist.extend(new_cons)
                 continue
             elif expr.name == 'or':
                 # rewrites that avoid auxiliary var creation, should go to normalize?
@@ -406,7 +408,12 @@ def normalized_boolexpr(expr, expr_dict = None):
             flatvar, flatcons = get_or_make_var(expr.args[0], expr_dict)
             return (~flatvar, flatcons)
         if all(__is_flat_var(arg) for arg in expr.args):
-            return (expr, [])
+            if expr in expr_dict:
+                return expr_dict[expr], []
+            else:
+                bvar = _BoolVarImpl()
+                expr_dict[expr] = bvar
+                return (bvar, [expr == bvar])
         else:
             # one of the arguments is not flat, flatten all
             flatvars, flatcons = zip(*[get_or_make_var(arg, expr_dict) for arg in expr.args])
@@ -584,3 +591,21 @@ def normalized_numexpr(expr, expr_dict=None, single_expr=None):
 
     raise Exception("Operator '{}' not allowed as numexpr".format(expr)) # or bug
 
+
+def applydemorgan (cpm_expr):
+    new_expr_list = []
+    for expr in cpm_expr:
+        if isinstance(expr, Operator):
+            if all(__is_flat_var_or_list(arg) for arg in expr.args):
+                if expr.name == "or" or expr.name == "and":
+                    if all(type(arg) == NegBoolView for arg in expr.args):
+                        newexpr = copy.copy(expr)
+                        if   expr.name == "and": newexpr.name = "or"
+                        elif expr.name == "or": newexpr.name = "and"
+                        else: raise ValueError(f"Unknown operator to negate {expr}")
+                        newexpr.args = [~a for a in expr.args]
+                        newexpr = ~newexpr
+                        new_expr_list.append(newexpr)
+        else:
+            new_expr_list.append(expr)
+    return new_expr_list

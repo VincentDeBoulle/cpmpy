@@ -355,7 +355,7 @@ def order_constraint(lst_of_expr):
 
         elif isinstance(cpm_expr, Operator):
             if cpm_expr.name in {"or", "and"}:
-                ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
+                ordered_expr = sorted([order_constraint([expr])[0] for expr in cpm_expr.args], key=str)
                 combined_expr = functools.reduce(lambda x, y: x | y if cpm_expr.name == "or" else x & y, ordered_expr)
                 newlist.append(combined_expr)
             elif cpm_expr.name in {"pow", "->", "mod", "not"}:

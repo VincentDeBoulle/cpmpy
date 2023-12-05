@@ -97,7 +97,8 @@ def only_implies(constraints, expr_dict=None):
                 if isinstance(a1, GlobalConstraint):
                     newcons.extend(newexprs)
                 else:
-                    newcons.extend(only_implies(only_bv_reifies(flatten_constraint(newexprs, expr_dict=expr_dict), expr_dict=expr_dict), expr_dict=expr_dict))
+                    newcons.extend(newexprs)
+                    #newcons.extend(only_implies(only_bv_reifies(flatten_constraint(newexprs, expr_dict=expr_dict), expr_dict=expr_dict), expr_dict=expr_dict))
         else:
             # all other flat normal form expressions are fine
             newcons.append(cpm_expr)

@@ -35,7 +35,7 @@ from ..expressions.globalconstraints import GlobalConstraint
 from ..expressions.utils import is_num, is_any_list, eval_comparison, flatlist
 from ..transformations.decompose_global import decompose_in_tree
 from ..transformations.get_variables import get_variables
-from ..transformations.flatten_model import flatten_constraint, flatten_objective
+from ..transformations.flatten_model import applydemorgan, flatten_constraint, flatten_objective
 from ..transformations.normalize import toplevel_list
 from ..transformations.reification import only_implies, reify_rewrite, only_bv_reifies
 from ..transformations.comparison import only_numexpr_equality
@@ -330,7 +330,8 @@ class CPM_ortools(SolverInterface):
 
         :return: list of Expression
         """
-        cpm_cons = toplevel_list(cpm_expr)
+        cpm_cons = applydemorgan(cpm_expr)
+        cpm_cons = toplevel_list(cpm_cons)
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
         cpm_cons = order_constraint(cpm_cons)
@@ -341,7 +342,7 @@ class CPM_ortools(SolverInterface):
         cpm_cons = only_bv_reifies(cpm_cons, expr_dict=self.expr_dict)
         cpm_cons = only_implies(cpm_cons, expr_dict=self.expr_dict)  # everything that can create
                                              # reified expr must go before this
-        print(cpm_cons)
+        print("cpm_cons: ", cpm_cons)
         print(self.expr_dict)
         return cpm_cons
 
