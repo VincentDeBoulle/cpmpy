@@ -58,7 +58,7 @@ if __name__ == "__main__":
     tablesp_ortools_noCSE =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools_noCSE.title = f'Results of the N-Queens problem without CSE (average of {nb_iterations} iterations)'    
 
-    for nb in range(500, 700, 5):
+    for nb in range(50, 70, 5):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Number of queens")
         parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
