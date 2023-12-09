@@ -406,7 +406,12 @@ def normalized_boolexpr(expr, expr_dict = None):
             flatvar, flatcons = get_or_make_var(expr.args[0], expr_dict)
             return (~flatvar, flatcons)
         if all(__is_flat_var(arg) for arg in expr.args):
-            return (expr, [])
+            if expr in expr_dict:
+                return expr_dict[expr], []
+            else:
+                bvar = _BoolVarImpl()
+                expr_dict[expr] = bvar
+                return (bvar, [expr == bvar])
         else:
             # one of the arguments is not flat, flatten all
             flatvars, flatcons = zip(*[get_or_make_var(arg, expr_dict) for arg in expr.args])

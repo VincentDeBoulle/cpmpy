@@ -39,7 +39,7 @@ from ..transformations.flatten_model import flatten_constraint, flatten_objectiv
 from ..transformations.normalize import toplevel_list
 from ..transformations.reification import only_implies, reify_rewrite, only_bv_reifies
 from ..transformations.comparison import only_numexpr_equality
-from ..transformations.linearize import canonical_comparison, order_constraint, remove_redundant
+from ..transformations.linearize import canonical_comparison, horn_clauses, order_constraint, remove_redundant
 
 class CPM_ortools(SolverInterface):
     """
@@ -334,6 +334,7 @@ class CPM_ortools(SolverInterface):
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
         cpm_cons = order_constraint(cpm_cons)
+        cpm_cons = horn_clauses(cpm_cons)
         cpm_cons = remove_redundant(cpm_cons)
         cpm_cons = flatten_constraint(cpm_cons, expr_dict=self.expr_dict)  # flat normal form
         cpm_cons = reify_rewrite(cpm_cons, supported=frozenset(['sum', 'wsum']), expr_dict=self.expr_dict)  # constraints that support reification

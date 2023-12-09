@@ -355,7 +355,7 @@ def order_constraint(lst_of_expr):
 
         elif isinstance(cpm_expr, Operator):
             if cpm_expr.name in {"or", "and"}:
-                ordered_expr = [order_constraint([expr])[0] for expr in cpm_expr.args]
+                ordered_expr = sorted([order_constraint([expr])[0] for expr in cpm_expr.args], key=str)
                 combined_expr = functools.reduce(lambda x, y: x | y if cpm_expr.name == "or" else x & y, ordered_expr)
                 newlist.append(combined_expr)
             elif cpm_expr.name in {"pow", "->", "mod", "not"}:
@@ -455,3 +455,25 @@ def remove_redundant(cpm_cons):
                 continue
         single_cons.append(cpm_expr)
     return single_cons
+
+def horn_clauses(cpm_cons):
+    new_expr_list = []
+    for expr in cpm_cons:
+        if isinstance(expr, Operator):
+            if expr.name == 'or':
+                pos_vars = sorted([arg for arg in expr.args if not isinstance(arg, NegBoolView)], key=str)
+                if len(pos_vars) == 1:
+                    neg_vars = [~arg for arg in expr.args if isinstance(arg, NegBoolView)]
+                    lhs = Operator('and', neg_vars)
+                    new_expr = Operator('->', [lhs, pos_vars[0]])
+                    new_expr_list.append(new_expr)
+                else:
+                    rhs = pos_vars[0]
+                    pos_vars.pop(0)
+                    neg_vars = [~arg for arg in expr.args if isinstance(arg, NegBoolView)] + [~arg for arg in pos_vars]
+                    lhs = Operator('and', neg_vars)
+                    new_expr = Operator('->', [lhs, rhs])
+                    new_expr_list.append(new_expr)
+        else:
+            new_expr_list.append(expr)
+    return new_expr_list
