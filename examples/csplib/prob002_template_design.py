@@ -19,8 +19,17 @@ cat-food.
 Implementation based on Minizinc model in CSPlib.
 Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
+sys.path.append('../cpmpy')
 
 from cpmpy import *
+import timeit
+import json
+from prettytable import PrettyTable
+import requests
+import argparse
+import numpy as np
+import gc
 
 def template_design(n_slots, n_templates, n_var, demand,**kwargs):
 
@@ -77,43 +86,92 @@ def _print_instances(data):
     print(df_str)
 
 if __name__ == "__main__":
-    import requests
-    import json
-    import argparse
 
-    import numpy as np
+    nb_iterations = 10
 
-    # argument parsing
-    url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob002_template_design.json"
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-instance', default="catfood2", help="Name of the problem instance found in file 'filename'")
-    parser.add_argument('-filename', default=url, help="File containing problem instances, can be local file or url")
-    parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
+    with open('examples/csplib/prob002_template_design.json', 'r') as json_file:
+        data = json.load(json_file)
 
-    args = parser.parse_args()
+    problem_names = [problem['name'] for problem in data]
 
-    if "http" in args.filename:
-        problem_data = requests.get(args.filename).json()
-    else:
-        with open(args.filename, "r") as f:
-            problem_data = json.load(f)
+    tablesp_ortools =  PrettyTable(['Problem instance', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools.title = f'Results of the Template Design problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Problem instance', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_noCSE.title = f'Results of the Template Design problem without CSE (average of {nb_iterations} iterations)'
 
-    if args.list_instances:
-        _print_instances(problem_data)
-        exit(0)
+    for name in problem_names:
+        # argument parsing
+        url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob002_template_design.json"
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument('-instance', default=name, help="Name of the problem instance found in file 'filename'")
+        parser.add_argument('-filename', default=url, help="File containing problem instances, can be local file or url")
+        parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
 
-    problem_params = _get_instance(problem_data, args.instance)
-    print("Problem name:", problem_params["name"])
+        args = parser.parse_args()
 
-    model, (production, layout) = template_design(**problem_params)
+        if "http" in args.filename:
+            problem_data = requests.get(args.filename).json()
+        else:
+            with open(args.filename, "r") as f:
+                problem_data = json.load(f)
 
-    # solve model
-    if model.solve(solver="ortools"):
-        np.set_printoptions(linewidth=problem_params['n_var']*5)
-        print("#Pressings \t Layout")
-        for t, l in zip(production.value(), layout.value()):
-            print("{:>10}\t {}".format(t, l))
-        print()
-        print(f"Total pressings: {sum(production).value()}")
-    else:
-        raise ValueError("Model is unsatisfiable")
+        if args.list_instances:
+            _print_instances(problem_data)
+            exit(0)
+
+        problem_params = _get_instance(problem_data, args.instance)
+        print("Problem name:", problem_params["name"])
+
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, (production, layout) = template_design(**problem_params)
+            model_creation_time = timeit.default_timer() - start_model_time
+
+            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=30)
+            if ret:
+                print("Solved this problem")
+                return model_creation_time, transform_time, solve_time, num_branches
+                
+            elif model.status().runtime > 29:
+                print("This problem passes the time limit")
+                return 408, 408, 408, 408
+            else:
+                print("Model is unsatisfiable!")
+                return 404, 404, 404, 404
+        
+        for slvr in ["ortools"]:
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
+
+            for lp in range(nb_iterations):
+                # Disable garbage collection for timing measurements
+                gc.disable()
+
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                model_creation_time,transform_time, solve_time, num_branches = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
+
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
+
+                # Re-enable garbage collection
+                gc.enable()
+            
+            average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
+            average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
+            average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
+            average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
+            average_num_branches = sum(sorted(total_num_branches)[:3]) / 3 
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/template_design.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")

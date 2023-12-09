@@ -29,6 +29,7 @@
 """
 import copy
 import warnings
+import timeit
 
 import numpy as np
 from .expressions.core import Expression
@@ -149,17 +150,22 @@ class Model(object):
             - True      if a solution is found (not necessarily optimal, e.g. could be after timeout)
             - False     if no solution is found
         """
+        start_solver_time = timeit.default_timer()
         if isinstance(solver, SolverInterface):
             # for advanced use, call its constructor with this model
             s = solver(self)
         else:
             s = SolverLookup.get(solver, self)
+        transform_time = timeit.default_timer() - start_solver_time
 
         # call solver
-        ret = s.solve(time_limit=time_limit)
+        start_solve_time = timeit.default_timer()
+        ret, num_branches = s.solve(time_limit=time_limit)
+        solve_time = timeit.default_timer() - start_solve_time
+
         # store CPMpy status (s object has no further use)
         self.cpm_status = s.status()
-        return ret
+        return ret, transform_time, solve_time, num_branches
 
     def solveAll(self, solver=None, display=None, time_limit=None, solution_limit=None):
         """

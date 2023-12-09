@@ -5,11 +5,18 @@ Sport scheduling in CPMpy
 Model created by Ignace Bleukx
 """
 import pandas as pd
+import gc
+import sys
+
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
 
 from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
 
 import numpy as np
+import timeit
 
 def sport_scheduling(n_teams):
 
@@ -45,25 +52,68 @@ def sport_scheduling(n_teams):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-n_teams", type=int, default=8, help="Number of teams to schedule")
+    nb_iterations = 10
 
-    args = parser.parse_args()
+    tablesp = PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools.title = f'Results of the Sport Scheduling problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_noCSE.title = f'Results of the Sport Scheduling problem without CSE (average of {nb_iterations} iterations)'    
 
-    n_teams = args.n_teams
-    n_weeks, n_periods, n_matches = n_teams - 1, n_teams // 2, (n_teams - 1) * n_teams // 2
+    for nb in range(8,21,2):
+        print('\n number: {}'.format(nb))
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-n_teams", type=int, default=nb, help="Number of teams to schedule")
 
-    model, (home, away) = sport_scheduling(n_teams)
+        args = parser.parse_args()
 
-    if model.solve():
-        import pandas as pd
-        home, away = home.value(), away.value()
-        matches = [[f"{h} v {a}" for h,a in zip(home[w], away[w])] for w in range(n_weeks)]
-        print(matches)
-        df = pd.DataFrame(matches,
-                          index=[f"Week {w+1}" for w in range(n_weeks)],
-                          columns=[f"Period {p+1}" for p in range(n_periods)])
-        print(df.T.to_string(col_space=8, justify="center"))
+        n_teams = args.n_teams
+        n_weeks, n_periods, n_matches = n_teams - 1, n_teams // 2, (n_teams - 1) * n_teams // 2
 
-    else:
-        raise ValueError("Model is unsatisfiable")
+        def create_model():
+            return sport_scheduling(n_teams)
+        
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, (home, away) = sport_scheduling(n_teams)
+            model_creation_time = timeit.default_timer() - start_model_time
+            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=30)
+            return model_creation_time, transform_time, solve_time, num_branches
+        
+        for slvr in ["ortools"]:
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
+
+            for lp in range(nb_iterations):
+                # Disable garbage collection for timing measurements
+                gc.disable()
+
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                model_creation_time, transform_time, solve_time, num_branches = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
+
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
+
+                # Re-enable garbage collection
+                gc.enable()
+
+
+            average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
+            average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
+            average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
+            average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
+            average_num_branches = sum(sorted(total_num_branches)[:3]) / 3
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/sport_scheduling.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")

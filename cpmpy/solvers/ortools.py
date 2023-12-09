@@ -202,7 +202,7 @@ class CPM_ortools(SolverInterface):
             if self.has_objective():
                 self.objective_value_ = self.ort_solver.ObjectiveValue()
 
-        return has_sol
+        return has_sol, self.ort_solver.NumBranches()
 
     def solveAll(self, display=None, time_limit=None, solution_limit=None, call_from_model=False, **kwargs):
         """
@@ -223,7 +223,7 @@ class CPM_ortools(SolverInterface):
 
         cb = OrtSolutionPrinter(self, display=display, solution_limit=solution_limit)
         self.solve(enumerate_all_solutions=True, solution_callback=cb, time_limit=time_limit, **kwargs)
-        return cb.solution_count()
+        return cb.solution_count(), self.ort_solver.NumBranches()
 
 
     def solver_var(self, cpm_var):
