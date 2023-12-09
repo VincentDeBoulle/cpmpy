@@ -84,9 +84,9 @@ if __name__ == "__main__":
     problem_names = [problem['name'] for problem in data]
 
     tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = f'Results of the Car Sequence problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_noCSE.title = f'Results of the Car Sequence problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = f'Results of the Car Sequence problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_CSE.title = f'Results of the Car Sequence problem without CSE (average of {nb_iterations} iterations)'
 
     for name in problem_names:
         # argument parsing
@@ -127,12 +127,14 @@ if __name__ == "__main__":
                 print("Model is unsatisfiable!")
                 return 404, 404, 404, 404
         
-        for slvr in ["ortools"]:
-            total_model_creation_time = []
-            total_transform_time = []
-            total_solve_time = []
-            total_execution_time = []
-            total_num_branches = []
+        total_model_creation_time = []
+        total_model_creation_time_CSE = []
+        total_transform_time = []
+        total_transform_time_CSE = []
+        total_solve_time = []
+        total_execution_time = []
+        total_num_branches = []
+        for slvr in ["ortools", "ortools_CSE"]:
 
             for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
@@ -162,4 +164,9 @@ if __name__ == "__main__":
                 tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/car_sequence.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/car_sequence_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")

@@ -45,9 +45,9 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = f'Results of the Auto Correlation problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = f'Results of the Auto Correlation problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = f'Results of the Auto Correlation problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_CSE.title = f'Results of the Auto Correlation problem with CSE (average of {nb_iterations} iterations)'
 
 
     for lngth in range(10, 25):
@@ -68,7 +68,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr, time_limit=30), model_creation_time
 
-        for slvr in ['ortools']:
+        for slvr in ['ortools', 'ortools_CSE']:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -103,4 +103,9 @@ if __name__ == "__main__":
                 tablesp_ortools.add_row([length, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/auto_correlation.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([length, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/auto_correlation_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")
