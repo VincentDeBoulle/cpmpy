@@ -56,9 +56,9 @@ if __name__ == "__main__":
 
     tablesp = PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
     tablesp_ortools =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = f'Results of the Sport Scheduling problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_noCSE.title = f'Results of the Sport Scheduling problem without CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools.title = f'Results of the Sport Scheduling problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_CSE.title = f'Results of the Sport Scheduling problem with CSE (average of {nb_iterations} iterations)'    
 
     for nb in range(8,21,2):
         print('\n number: {}'.format(nb))
@@ -80,7 +80,7 @@ if __name__ == "__main__":
             ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=30)
             return model_creation_time, transform_time, solve_time, num_branches
         
-        for slvr in ["ortools"]:
+        for slvr in ["ortools", "ortools_CSE"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -116,4 +116,9 @@ if __name__ == "__main__":
                 tablesp_ortools.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/sport_scheduling.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/sport_scheduling_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")

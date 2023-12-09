@@ -67,9 +67,9 @@ if __name__ == "__main__":
     nb_iterations = 1
 
     tablesp_ortools = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = 'Results of the All Interval problem with CSE (average of 10 iterations)'
-    tablesp_ortools_noCSE = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the All Interval problem without CSE (average of 10 iterations)'
+    tablesp_ortools.title = 'Results of the All Interval problem without CSE (average of 10 iterations)'
+    tablesp_ortools_CSE = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_CSE.title = 'Results of the All Interval problem with CSE (average of 10 iterations)'
 
     for lngth in range(15, 30):
         parser = argparse.ArgumentParser(description=__doc__)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr), model_creation_time
 
-        for slvr in ["ortools"]:
+        for slvr in ["ortools", "ortools_CSE"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -118,6 +118,11 @@ if __name__ == "__main__":
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([lngth, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/all_interval_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/all_interval.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([lngth, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/all_interval_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")

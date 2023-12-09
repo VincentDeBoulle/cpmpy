@@ -58,9 +58,9 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = f'OR-Tools: Results of the Golomb problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = f'OR-Tools: Results of the Golomb problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = f'OR-Tools: Results of the Golomb problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_CSE.title = f'OR-Tools: Results of the Golomb problem with CSE (average of {nb_iterations} iterations)'
 
     for sz in range(10, 26):
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr), model_creation_time
 
-        for slvr in ['ortools']:
+        for slvr in ['ortools', 'ortools_CSE']:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -111,4 +111,9 @@ if __name__ == "__main__":
                 tablesp_ortools.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/golomb.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/golomb_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")

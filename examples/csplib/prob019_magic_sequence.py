@@ -47,9 +47,9 @@ if __name__ == "__main__":
     nb_iterations = 10
     
     tablesp_ortools =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = f'Results of the Magic Sequence problem with CSE (average of ${nb_iterations}$ iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_noCSE.title = f'Results of the Magic Sequence problem without CSE (average of ${nb_iterations}$ iterations)'    
+    tablesp_ortools.title = f'Results of the Magic Sequence problem without CSE (average of ${nb_iterations}$ iterations)'
+    tablesp_ortools_CSE =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_CSE.title = f'Results of the Magic Sequence problem with CSE (average of ${nb_iterations}$ iterations)'    
 
     for n in range(100, 155, 5):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
             return model.solve(solver=slvr), model_creation_time
 
-        for slvr in ["ortools"]:
+        for slvr in ["ortools", "ortools_CSE"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -99,4 +99,9 @@ if __name__ == "__main__":
                 tablesp_ortools.add_row([args.length, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/magic_sequence.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([args.length, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/magic_sequence.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")

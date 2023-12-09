@@ -54,9 +54,9 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = f'Results of the N-Queens problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_noCSE.title = f'Results of the N-Queens problem without CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools.title = f'Results of the N-Queens problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = f'Results of the N-Queens problem with CSE (average of {nb_iterations} iterations)'    
 
     for nb in range(500, 700, 5):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -106,6 +106,11 @@ if __name__ == "__main__":
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([nb, n_sols, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/n_queens_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/n_queens.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([nb, n_sols, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/n_queens_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")

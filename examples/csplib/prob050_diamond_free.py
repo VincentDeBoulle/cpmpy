@@ -91,9 +91,9 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Size of diamond', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = f'Results of the Diamond Free problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Size of diamond', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_noCSE.title = f'Results of the Diamond Free problem without CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools.title = f'Results of the Diamond Free problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE =  PrettyTable(['Size of diamond', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = f'Results of the Diamond Free problem with CSE (average of {nb_iterations} iterations)'    
 
     for nb in range(10, 21):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -111,7 +111,7 @@ if __name__ == "__main__":
                 solver=slvr,
                 time_limit=30), model_creation_time
 
-        for slvr in ["ortools"]:
+        for slvr in ["ortools", "ortools_CSE"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -144,6 +144,11 @@ if __name__ == "__main__":
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([nb, n_sols, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/diamond_free_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/diamond_free.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_CSE':
+                tablesp_ortools_CSE.add_row([nb, n_sols, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/diamond_free_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
                     f.write("\n")
