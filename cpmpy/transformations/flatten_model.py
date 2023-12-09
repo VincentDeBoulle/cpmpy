@@ -606,6 +606,8 @@ def applydemorgan (cpm_expr):
                         newexpr.args = [~a for a in expr.args]
                         newexpr = ~newexpr
                         new_expr_list.append(newexpr)
+                    else:
+                        new_expr_list.append(expr)
         else:
             new_expr_list.append(expr)
     return new_expr_list
