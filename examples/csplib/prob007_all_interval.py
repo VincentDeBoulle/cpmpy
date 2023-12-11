@@ -64,12 +64,14 @@ def print_solution(x, diffs):
 
 if __name__ == "__main__":
 
-    nb_iterations = 1
+    nb_iterations = 10
 
     tablesp_ortools = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = 'Results of the All Interval problem without CSE (average of 10 iterations)'
+    tablesp_ortools.title = f'Results of the All Interval problem without CSE'
     tablesp_ortools_CSE = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_CSE.title = 'Results of the All Interval problem with CSE (average of 10 iterations)'
+    tablesp_ortools_CSE.title = f'Results of the All Interval problem with CSE'
+    tablesp_ortools_factor = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_factor.title = 'Results of the All Interval problem'
 
     for lngth in range(15, 30):
         parser = argparse.ArgumentParser(description=__doc__)
@@ -109,20 +111,38 @@ if __name__ == "__main__":
 
                 # Re-enable garbage collection
                 gc.enable()
-            
-            average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
-            average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
-            average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
-            average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
-            average_num_branches = sum(sorted(total_num_branches)[:3]) / 3 
 
             if slvr == 'ortools':
+                average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
+                average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
+                average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
+                average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
+                average_num_branches = sum(sorted(total_num_branches)[:3]) / 3 
+
                 tablesp_ortools.add_row([lngth, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/all_interval.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
+
             elif slvr == 'ortools_CSE':
-                tablesp_ortools_CSE.add_row([lngth, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                average_model_creation_time_2 = sum(sorted(total_model_creation_time)[:3]) / 3 
+                average_transform_time_2 = sum(sorted(total_transform_time)[:3]) / 3 
+                average_solve_time_2 = sum(sorted(total_solve_time)[:3]) / 3 
+                average_execution_time_2 = sum(sorted(total_execution_time)[:3]) / 3 
+                average_num_branches_2 = sum(sorted(total_num_branches)[:3]) / 3 
+
+                tablesp_ortools_CSE.add_row([lngth, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
                 with open("cpmpy/timing_results/all_interval_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_CSE))
+                    f.write("\n")
+
+                factor_model_creation_time = average_model_creation_time / average_model_creation_time_2
+                factor_tranform_time = average_transform_time / average_transform_time_2
+                factor_solve_time = average_solve_time / average_solve_time_2
+                factor_execution_time = average_execution_time / average_execution_time_2
+                factor_num_branches = average_num_branches / average_num_branches_2
+
+                tablesp_ortools_factor.add_row([lngth, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
+                with open("cpmpy/CSE_results/all_interval.txt", "w") as f:
+                    f.write(str(tablesp_ortools_factor))
                     f.write("\n")

@@ -54,11 +54,12 @@ if __name__ == "__main__":
 
     nb_iterations = 10
 
-    tablesp = PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
     tablesp_ortools =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
     tablesp_ortools.title = f'Results of the Sport Scheduling problem without CSE (average of {nb_iterations} iterations)'
     tablesp_ortools_CSE =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
     tablesp_ortools_CSE.title = f'Results of the Sport Scheduling problem with CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools_factor =  PrettyTable(['Nb of Teams', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_factor.title = f'Results of the Sport Scheduling problem'
 
     for nb in range(8,21,2):
         print('\n number: {}'.format(nb))
@@ -105,20 +106,37 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
 
-
-            average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
-            average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
-            average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
-            average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
-            average_num_branches = sum(sorted(total_num_branches)[:3]) / 3
-
             if slvr == 'ortools':
+                average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
+                average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
+                average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
+                average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
+                average_num_branches = sum(sorted(total_num_branches)[:3]) / 3
+
                 tablesp_ortools.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/sport_scheduling.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
+
             elif slvr == 'ortools_CSE':
-                tablesp_ortools_CSE.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                average_model_creation_time_2 = sum(sorted(total_model_creation_time)[:3]) / 3 
+                average_transform_time_2 = sum(sorted(total_transform_time)[:3]) / 3 
+                average_solve_time_2 = sum(sorted(total_solve_time)[:3]) / 3 
+                average_execution_time_2 = sum(sorted(total_execution_time)[:3]) / 3 
+                average_num_branches_2 = sum(sorted(total_num_branches)[:3]) / 3
+
+                tablesp_ortools_CSE.add_row([nb, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
                 with open("cpmpy/timing_results/sport_scheduling_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_CSE))
+                    f.write("\n")
+
+                factor_model_creation_time = average_model_creation_time / average_model_creation_time_2
+                factor_tranform_time = average_transform_time / average_transform_time_2
+                factor_solve_time = average_solve_time / average_solve_time_2
+                factor_execution_time = average_execution_time / average_execution_time_2
+                factor_num_branches = average_num_branches / average_num_branches_2
+
+                tablesp_ortools_factor.add_row([nb, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
+                with open("cpmpy/CSE_results/sport_scheduling.txt", "w") as f:
+                    f.write(str(tablesp_ortools_factor))
                     f.write("\n")
