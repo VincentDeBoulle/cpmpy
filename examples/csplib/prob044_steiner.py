@@ -62,11 +62,11 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Number of Sets', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = f'Results of the Steiner problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = 'Results of the Steiner problem without CSE'
     tablesp_ortools_CSE =  PrettyTable(['Number of Sets', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_CSE.title = f'Results of the Steiner problem with CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools_CSE.title = 'Results of the Steiner problem with CSE'    
     tablesp_ortools_factor =  PrettyTable(['Number of Sets', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_factor.title = f'Results of the Steiner problem'    
+    tablesp_ortools_factor.title = 'Results of the Steiner problem'    
 
     for num in range(3, 16, 3):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

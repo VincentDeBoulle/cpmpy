@@ -66,11 +66,11 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = f'Results of the Balanced Incomplete Block Design (BIBD) problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = 'Results of the Balanced Incomplete Block Design (BIBD) problem without CSE'
     tablesp_ortools_CSE =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_CSE.title = f'Results of the Balanced Incomplete Block Design (BIBD) problem with CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools_CSE.title = 'Results of the Balanced Incomplete Block Design (BIBD) problem with CSE'    
     tablesp_ortools_factor =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_factor.title = f'Results of the Balanced Incomplete Block Design (BIBD) problem'    
+    tablesp_ortools_factor.title = 'Results of the Balanced Incomplete Block Design (BIBD) problem'    
 
     for i in range(2, 11, 2):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

@@ -43,11 +43,11 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = f'Results of the Hadamard matrix problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = 'Results of the Hadamard matrix problem without CSE'
     tablesp_ortools_CSE =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_CSE.title = f'Results of the Hadamard matrix problem with CSE (average of {nb_iterations} iterations)'   
+    tablesp_ortools_CSE.title = 'Results of the Hadamard matrix problem with CSE'   
     tablesp_ortools_factor =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_factor.title = f'Results of the Hadamard matrix problem with CSE' 
+    tablesp_ortools_factor.title = 'Results of the Hadamard matrix problem' 
 
     for lngth in range(17, 35, 2):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

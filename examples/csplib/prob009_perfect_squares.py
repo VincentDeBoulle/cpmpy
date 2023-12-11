@@ -85,11 +85,11 @@ if __name__ == "__main__":
     problem_names = [problem['name'] for problem in data]
 
     tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools.title = f'Results of the Perfect Squares problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = 'Results of the Perfect Squares problem without CSE'
     tablesp_ortools_CSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_CSE.title = f'Results of the Perfect Squares problem with CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools_CSE.title = 'Results of the Perfect Squares problem with CSE'    
     tablesp_ortools_factor =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
-    tablesp_ortools_factor.title = f'Results of the Perfect Squares problem'  
+    tablesp_ortools_factor.title = 'Results of the Perfect Squares problem'  
 
     for name in problem_names:
     # argument parsing

@@ -58,11 +58,11 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = f'OR-Tools: Results of the Golomb problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = 'OR-Tools: Results of the Golomb problem without CSE'
     tablesp_ortools_CSE = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_CSE.title = f'OR-Tools: Results of the Golomb problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE.title = 'OR-Tools: Results of the Golomb problem with CSE'
     tablesp_ortools_factor = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_factor.title = f'OR-Tools: Results of the Golomb problem'
+    tablesp_ortools_factor.title = 'OR-Tools: Results of the Golomb problem'
 
     for sz in range(10, 26):
 

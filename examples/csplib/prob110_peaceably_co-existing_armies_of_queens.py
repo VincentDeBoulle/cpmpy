@@ -52,11 +52,11 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools = PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = f'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem without CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools.title = 'Results of the Peaceably Co-existing Armies of Queens problem without CSE'
     tablesp_ortools_CSE =  PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_CSE.title = f'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_CSE.title = 'Results of the Peaceably Co-existing Armies of Queens problem with CSE'
     tablesp_ortools_factor =  PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_factor.title = f'OR-Tools: Results of the Peaceably Co-existing Armies of Queens problem'
+    tablesp_ortools_factor.title = 'Results of the Peaceably Co-existing Armies of Queens problem'
         
     for sz in range(5, 21):
         n = sz # Size of the board

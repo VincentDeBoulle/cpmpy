@@ -67,9 +67,9 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = f'Results of the All Interval problem without CSE'
+    tablesp_ortools.title = 'Results of the All Interval problem without CSE'
     tablesp_ortools_CSE = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_CSE.title = f'Results of the All Interval problem with CSE'
+    tablesp_ortools_CSE.title = 'Results of the All Interval problem with CSE'
     tablesp_ortools_factor = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
     tablesp_ortools_factor.title = 'Results of the All Interval problem'
 
