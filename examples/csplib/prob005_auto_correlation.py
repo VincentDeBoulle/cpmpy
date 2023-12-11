@@ -51,7 +51,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
     tablesp_ortools_factor.title = 'Results of the Auto Correlation problem'
 
-    for lngth in range(10, 25):
+    for lngth in range(10, 20):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-length", nargs='?', type=int, default=lngth, help="Length of bitarray")
 
