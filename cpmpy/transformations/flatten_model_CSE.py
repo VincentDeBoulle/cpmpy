@@ -344,9 +344,11 @@ def get_or_make_var(expr, expr_dict=None):
 
         if flatexpr in expr_dict:
             return expr_dict[flatexpr], []
+        elif isinstance(flatexpr, _IntVarImpl):
+            return flatexpr, flatcons
         else:
             expr_dict[flatexpr] = ivar
-        return (ivar, [flatexpr == ivar]+flatcons)
+            return (ivar, [flatexpr == ivar]+flatcons)
 
 def get_or_make_var_or_list(expr, expr_dict=None):
     """ Like get_or_make_var() but also accepts and recursively transforms lists
@@ -531,7 +533,15 @@ def normalized_numexpr(expr, expr_dict=None):
             flatvars, flatcons = zip(*[get_or_make_var(arg, expr_dict) for arg in expr.args])
 
             newexpr = Operator(expr.name, flatvars)
-            return (newexpr, [c for con in flatcons for c in con])
+            if newexpr in expr_dict:
+                return expr_dict[newexpr], []
+            else:
+                lb, ub = newexpr.get_bounds()
+
+                ivar = _IntVarImpl(lb, ub)
+                expr_dict[newexpr] = ivar
+
+            return (ivar, [c for con in flatcons for c in con] + [newexpr == ivar])
     else:
         # Globalfunction (examples: Max,Min,Element)
 
