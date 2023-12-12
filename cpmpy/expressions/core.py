@@ -272,7 +272,6 @@ class Expression(object):
             else:
                 if any(is_num(a) for a in self.args):
                     self.args = [i if not is_num(i) else i + other for i in self.args]
-                    print(self.args)
                     return self
         else:
             neg_other = self.get_negation(other)
@@ -284,8 +283,9 @@ class Expression(object):
     
     # Returns the negation of a variable
     def get_negation(self, variable):
-        if variable.name == '-':
-            return variable.args[0]
+        if isinstance(variable, Operator):
+            if variable.name == '-':
+                return variable.args[0]
         return Operator('-', [variable])
 
     def __radd__(self, other):
