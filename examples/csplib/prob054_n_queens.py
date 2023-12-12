@@ -75,7 +75,7 @@ if __name__ == "__main__":
             print("queens:{}".format(args.n))
             return model.solve(), model_creation_time
             
-        for slvr in ["ortools"]:
+        for slvr in ["ortools", "ortools_CSE"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -129,7 +129,7 @@ if __name__ == "__main__":
                 factor_execution_time = average_execution_time / average_execution_time_2
                 factor_num_branches = average_num_branches / average_num_branches_2
 
-                tablesp_ortools_factor.add_row([args.nb, n_sols, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
+                tablesp_ortools_factor.add_row([nb, n_sols, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
                 with open("cpmpy/CSE_results/n_queens.txt", "w") as f:
                     f.write(str(tablesp_ortools_factor))
                     f.write("\n")
