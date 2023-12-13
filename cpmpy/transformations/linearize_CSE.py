@@ -402,10 +402,10 @@ def order_expressions(expr):
     """
     Orders an expression alphabetically
     """
-    if isinstance(expr, _BoolVarImpl) or isinstance(expr, _NumVarImpl):
+    if isinstance(expr, (_BoolVarImpl, _NumVarImpl, int, float)):
             return expr
     if expr.name == "-":
-        if isinstance(expr.args[0], _BoolVarImpl) or isinstance(expr.args[0], _NumVarImpl):
+        if isinstance(expr.args[0], (_BoolVarImpl, _NumVarImpl)):
             return expr
         else:
             ord_expr = order_expressions(expr.args[0])
