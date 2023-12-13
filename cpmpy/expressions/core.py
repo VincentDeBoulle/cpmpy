@@ -259,8 +259,13 @@ class Expression(object):
     # Mathematical Operators, including 'r'everse if it exists
     # Addition
     def __add__(self, other):
+        if is_num(other) and isinstance(self, Operator) and any(is_num(a) for a in self.args):
+            self.args = [i + other if is_num(i) else i for i in self.args]
+            return self
+        
         if is_num(other) and other == 0:
             return self
+        
         return Operator("sum", [self, other])
 
     def __radd__(self, other):
