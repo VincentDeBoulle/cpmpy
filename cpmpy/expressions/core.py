@@ -283,16 +283,22 @@ class Expression(object):
     
     # multiplication, puts the 'constant' (other) first
     def __mul__(self, other):
-        if is_num(other) and other == 1:
-            return self
+        if is_num(other):
+            if other == 0:
+                return 0
+            elif other == 1:
+                return self
         # this unnecessarily complicates wsum creation
         #if is_num(other) and other == 0:
         #    return other
         return Operator("mul", [self, other])
 
     def __rmul__(self, other):
-        if is_num(other) and other == 1:
-            return self
+        if is_num(other):
+            if other == 0:
+                return 0
+            elif other == 1:
+                return self
         # this unnecessarily complicates wsum creation
         #if is_num(other) and other == 0:
         #    return other
@@ -304,18 +310,26 @@ class Expression(object):
     # other mathematical ones
     def __truediv__(self, other):
         warnings.warn("We only support floordivision, use // in stead of /", SyntaxWarning)
+        if is_num(self) and self == 0:
+            return 0
         return self.__floordiv__(other)
 
     def __rtruediv__(self, other):
         warnings.warn("We only support floordivision, use // in stead of /", SyntaxWarning)
+        if is_num(other) and other == 0:
+            return 0
         return self.__rfloordiv__(other)
 
     def __floordiv__(self, other):
-        if is_num(other) and other == 1:
+        if is_num(self) and self == 0:
+            return 0
+        elif is_num(other) and other == 1:
             return self
         return Operator("div", [self, other])
 
     def __rfloordiv__(self, other):
+        if is_num(other) and other == 0:
+            return 0
         return Operator("div", [other, self])
 
     def __mod__(self, other):
@@ -330,10 +344,18 @@ class Expression(object):
             return 1
         elif other == 1:
             return self
+        elif self == 0:
+            return 0
+        elif self == 1:
+            return 1
         return Operator("pow", [self, other])
 
     def __rpow__(self, other, modulo=None):
         assert (modulo is None), "Power operator: modulo not supported"
+        if other == 0:
+            return 0
+        if other == 1:
+            return 1
         return Operator("pow", [other, self])
 
     # Not implemented: (yet?)
