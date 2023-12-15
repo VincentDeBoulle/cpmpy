@@ -250,10 +250,7 @@ def flatten_constraint(expr, expr_dict=None):
             if exprname == '==' and lexpr.is_bool():
                 (lhs, lcons) = normalized_boolexpr(lexpr, expr_dict)
             else:
-                if __is_flat_var(rexpr):
-                    (lhs, lcons) = normalized_numexpr(lexpr, expr_dict, rexpr)
-                else:
-                    (lhs, lcons) = normalized_numexpr(lexpr, expr_dict)
+                (lhs, lcons) = normalized_numexpr(lexpr, expr_dict, rvar)
 
             newlist.append(Comparison(exprname, lhs, rvar))
             newlist.extend(lcons)
