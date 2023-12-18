@@ -66,11 +66,13 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = f'Results of the Balanced Incomplete Block Design (BIBD) problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_noCSE.title = f'Results of the Balanced Incomplete Block Design (BIBD) problem without CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools.title = 'Results of the Balanced Incomplete Block Design (BIBD) problem without CSE'
+    tablesp_ortools_CSE =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = 'Results of the Balanced Incomplete Block Design (BIBD) problem with CSE'    
+    tablesp_ortools_factor =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_factor.title = 'Results of the Balanced Incomplete Block Design (BIBD) problem'    
 
-    for i in range(2, 16, 2):
+    for i in range(2, 11, 2):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions to find, find all by default")
 
@@ -92,11 +94,11 @@ if __name__ == "__main__":
 
 
         for slvr in ["ortools_noCSE", "ortools"]:
-            total_model_creation_time = 0
-            total_transform_time = 0
-            total_solve_time = 0
-            total_execution_time = 0
-            total_num_branches = 0
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
 
             for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
@@ -107,28 +109,45 @@ if __name__ == "__main__":
                 (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code(slvr)
                 execution_time = timeit.default_timer() - start_time
 
-                total_model_creation_time += model_creation_time
-                total_transform_time += transform_time
-                total_solve_time += solve_time
-                total_execution_time += execution_time
-                total_num_branches += num_branches
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
 
                 # Re-enable garbage collection
                 gc.enable()
-            
-            average_model_creation_time = total_model_creation_time / nb_iterations
-            average_transform_time = total_transform_time / nb_iterations
-            average_solve_time = total_solve_time / nb_iterations
-            average_execution_time = total_execution_time / nb_iterations
-            average_num_branches = total_num_branches / nb_iterations
 
-            if slvr == 'ortools':
+            if slvr == 'ortools_noCSE':
+                average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
+                average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
+                average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
+                average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
+                average_num_branches = sum(sorted(total_num_branches)[:3]) / 3
+
                 tablesp_ortools.add_row([default, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/bibd_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/bibd.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
-            else:
-                tablesp_ortools_noCSE.add_row([default, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, num_branches])
-                with open("cpmpy/timing_results/bibd.txt", "w") as f:
-                    f.write(str(tablesp_ortools_noCSE))
+            elif slvr == 'ortools':
+                average_model_creation_time_2 = sum(sorted(total_model_creation_time)[:3]) / 3 
+                average_transform_time_2 = sum(sorted(total_transform_time)[:3]) / 3 
+                average_solve_time_2 = sum(sorted(total_solve_time)[:3]) / 3 
+                average_execution_time_2 = sum(sorted(total_execution_time)[:3]) / 3 
+                average_num_branches_2 = sum(sorted(total_num_branches)[:3]) / 3
+
+                tablesp_ortools_CSE.add_row([default, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
+                with open("cpmpy/timing_results/bibd_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
+                    f.write("\n")
+
+                factor_model_creation_time = average_model_creation_time / average_model_creation_time_2
+                factor_tranform_time = average_transform_time / average_transform_time_2
+                factor_solve_time = average_solve_time / average_solve_time_2
+                factor_execution_time = average_execution_time / average_execution_time_2
+                factor_num_branches = average_num_branches / average_num_branches_2
+
+                tablesp_ortools_factor.add_row([default, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
+                with open("cpmpy/CSE_results/bibd.txt", "w") as f:
+                    f.write(str(tablesp_ortools_factor))
                     f.write("\n")
