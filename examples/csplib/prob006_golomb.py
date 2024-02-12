@@ -104,11 +104,11 @@ if __name__ == "__main__":
                 #gc.enable()
 
             if slvr == 'ortools':
-                average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
-                average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
-                average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
-                average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
-                average_num_branches = sum(sorted(total_num_branches)[:3]) / 3 
+                average_model_creation_time = sum(total_model_creation_time) / nb_iterations 
+                average_transform_time = sum(total_transform_time) / nb_iterations
+                average_solve_time = sum(total_solve_time) / nb_iterations 
+                average_execution_time = sum(total_execution_time) / nb_iterations 
+                average_num_branches = sum(total_num_branches) / nb_iterations 
 
                 tablesp_ortools.add_row([size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
                 with open("cpmpy/timing_results/golomb.txt", "w") as f:
@@ -116,11 +116,11 @@ if __name__ == "__main__":
                     f.write("\n")
 
             elif slvr == 'ortools_CSE':
-                average_model_creation_time_2 = sum(sorted(total_model_creation_time)[:3]) / 3 
-                average_transform_time_2 = sum(sorted(total_transform_time)[:3]) / 3 
-                average_solve_time_2 = sum(sorted(total_solve_time)[:3]) / 3 
-                average_execution_time_2 = sum(sorted(total_execution_time)[:3]) / 3 
-                average_num_branches_2 = sum(sorted(total_num_branches)[:3]) / 3 
+                average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
+                average_transform_time_2 = sum(total_transform_time) / nb_iterations
+                average_solve_time_2 = sum(total_solve_time) / nb_iterations
+                average_execution_time_2 = sum(total_execution_time) / nb_iterations 
+                average_num_branches_2 = sum(total_num_branches) / nb_iterations 
 
                 tablesp_ortools_CSE.add_row([size, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
                 with open("cpmpy/timing_results/golomb_CSE.txt", "w") as f:
