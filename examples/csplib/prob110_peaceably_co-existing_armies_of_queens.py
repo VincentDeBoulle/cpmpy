@@ -101,11 +101,11 @@ if __name__ == "__main__":
 
                 gc.enable()
 
-            average_model_creation_time = sum(sorted(total_model_creation_time)[:3]) / 3 
-            average_transform_time = sum(sorted(total_transform_time)[:3]) / 3 
-            average_solve_time = sum(sorted(total_solve_time)[:3]) / 3 
-            average_execution_time = sum(sorted(total_execution_time)[:3]) / 3 
-            average_num_branches = sum(sorted(total_num_branches)[:3]) / 3
+            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
+            average_transform_time = sum(total_transform_time) / nb_iterations
+            average_solve_time = sum(total_solve_time) / nb_iterations
+            average_execution_time = sum(total_execution_time) / nb_iterations
+            average_num_branches = sum(total_num_branches) / nb_iterations
 
             if slvr == 'ortools':
                 tablesp_ortools.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
