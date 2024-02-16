@@ -19,6 +19,12 @@ See also my cpmpy page: http://www.hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import gc
+import sys
+import timeit
+
+from prettytable import PrettyTable
+sys.path.append('../cpmpy')
 import numpy as np
 
 from cpmpy import *
@@ -57,20 +63,67 @@ def bibd(v, b, r, k, l):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions to find, find all by default")
+    nb_iterations = 10
 
-    args = parser.parse_args()
+    tablesp_ortools =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = f'Results of the Balanced Incomplete Block Design (BIBD) problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Values', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_noCSE.title = f'Results of the Balanced Incomplete Block Design (BIBD) problem without CSE (average of {nb_iterations} iterations)'    
 
-    default = {'v': 7, 'b': 7, 'r': 3, 'k': 3, 'l': 1}
+    for i in range(2, 11, 2):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions to find, find all by default")
 
-    model, (matrix,) = bibd(**default)
+        args = parser.parse_args()
+        print("Number of i: ", i)
 
-    # find all solutions of model
-    num_solutions = model.solveAll(solution_limit=args.solution_limit,
-                                   display = lambda: print(matrix.value(), end="\n\n"))
+        default = {'v': 7*i, 'b': 7*i, 'r': 3*i, 'k': 3*i, 'l': 1*i}
+        
+        def create_model():
+         return bibd(**default)
 
-    if num_solutions == 0:
-        raise ValueError("Model is unsatisfiable")
-    else:
-        print(f"Found {num_solutions} solutions")
+        model_creation_time = timeit.timeit(create_model, number = 1)    
+
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, (matrix,) = bibd(**default)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(solver=slvr, time_limit=30), model_creation_time
+
+
+        for slvr in ["ortools"]:
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
+
+            for lp in range(nb_iterations):
+                # Disable garbage collection for timing measurements
+                gc.disable()
+
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
+
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
+
+                # Re-enable garbage collection
+                gc.enable()
+            
+            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
+            average_transform_time = sum(total_transform_time) / nb_iterations
+            average_solve_time = sum(total_solve_time) / nb_iterations
+            average_execution_time = sum(total_execution_time) / nb_iterations
+            average_num_branches = sum(total_num_branches) / nb_iterations
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([default, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/bibd_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")

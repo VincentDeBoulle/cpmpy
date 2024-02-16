@@ -23,7 +23,13 @@ See also my cpmpy page: http://www.hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import sys
 import argparse
+import timeit
+import gc
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
 
 from cpmpy import *
 import numpy as np
@@ -58,16 +64,60 @@ def print_solution(x, diffs):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-length", type=int,help="Length of array, 12 by default", default=12)
-    parser.add_argument("--solution_limit", type=int, help="Number of solutions to find, find all by default", default=0)
+    nb_iterations = 1
 
-    args = parser.parse_args()
+    tablesp_ortools = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools.title = 'Results of the All Interval problem with CSE (average of 10 iterations)'
+    tablesp_ortools_noCSE = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_noCSE.title = 'Results of the All Interval problem without CSE (average of 10 iterations)'
 
-    model, (x, diffs) = all_interval(args.length)
-    found_n = model.solveAll(solution_limit=args.solution_limit,
-                             display=lambda: print_solution(x, diffs))
-    if found_n == 0:
-        print(f"Fund {found_n} solutions")
-    else:
-        raise ValueError("Problem is unsatisfiable")
+    for lngth in range(15, 30):
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("-length", type=int,help="Length of array, 12 by default", default=lngth)
+        parser.add_argument("--solution_limit", type=int, help="Number of solutions to find, find all by default", default=0)
+
+        print(lngth)
+        args = parser.parse_args()
+        
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, (x, diffs) = all_interval(args.length)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(solver=slvr), model_creation_time
+
+        for slvr in ["ortools"]:
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
+
+            for lp in range(nb_iterations):
+                # Disable garbage collection for timing measurements
+                gc.disable()
+
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
+
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
+
+                # Re-enable garbage collection
+                gc.enable()
+            
+            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
+            average_transform_time = sum(total_transform_time) / nb_iterations
+            average_solve_time = sum(total_solve_time) / nb_iterations
+            average_execution_time = sum(total_execution_time) / nb_iterations
+            average_num_branches = sum(total_num_branches) / nb_iterations
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([lngth, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/all_interval_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")

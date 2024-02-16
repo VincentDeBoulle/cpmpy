@@ -17,8 +17,15 @@ See also my cpmpy page: http://hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import timeit
 import numpy as np
 import sys
+import gc
+
+from prettytable import PrettyTable
+
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 
 def costas_array(n=6):
@@ -80,16 +87,60 @@ def print_sol(costas, differences):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-size", type=int, default=6, help="Size of array")
-    parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
+    nb_iterations = 10
 
-    args = parser.parse_args()
+    tablesp_ortools =  PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools.title = f'Results of the Costas Arrays problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
+    tablesp_ortools_noCSE.title = f'Results of the Costas Arrays problem without CSE (average of {nb_iterations} iterations)'    
 
-    model, (costas, differences) = costas_array(args.size)
-    num_sols = model.solveAll(
-        solution_limit=args.solution_limit,
-        display = lambda: print_sol(costas, differences)
-    )
+    for sz in range(5, 15):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-size", type=int, default=sz, help="Size of array")
+        parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
 
-    print(f"Found {num_sols} solutions")
+        args = parser.parse_args()
+        print(args.size)
+
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, (costas, differences) = costas_array(args.size)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(solver=slvr), model_creation_time
+
+        for slvr in ["ortools"]:
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
+
+            for lp in range(nb_iterations):
+                # Disable garbage collection for timing measurements
+                gc.disable()
+
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                (_, transform_time, solve_time, num_branches), model_creation_time = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
+
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
+
+                # Re-enable garbage collection
+                gc.enable()
+
+            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
+            average_transform_time = sum(total_transform_time) / nb_iterations
+            average_solve_time = sum(total_solve_time) / nb_iterations
+            average_execution_time = sum(total_execution_time) / nb_iterations
+            average_num_branches = sum(total_num_branches) / nb_iterations
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([args.size, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/costas_arrays_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")

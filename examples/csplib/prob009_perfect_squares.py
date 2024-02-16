@@ -19,9 +19,14 @@ Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import sys
 import numpy as np
+from prettytable import PrettyTable
+sys.path.append('../cpmpy')
+
 from cpmpy import *
 from cpmpy.expressions.utils import all_pairs
-
+import json
+import timeit
+import gc
 
 def perfect_squares(base, sides, **kwargs):
     model = Model()
@@ -71,41 +76,92 @@ if __name__ == "__main__":
     import json
     import requests
 
+    nb_iterations = 10
+
+    # Get all problem names out of the JSON (future proof if json changes)
+    with open('examples/csplib/prob009_perfect_squares.json', 'r') as json_file:
+        data = json.load(json_file)
+    
+    problem_names = [problem['name'] for problem in data]
+
+    tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools.title = f'Results of the Perfect Squares problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_noCSE.title = f'Results of the Perfect Squares problem without CSE (average of {nb_iterations} iterations)'    
+
+    for name in problem_names:
     # argument parsing
-    url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob009_perfect_squares.json"
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-instance', nargs='?', default="problem7", help="Name of the problem instance found in file 'filename'")
-    parser.add_argument('-filename', nargs='?', default=url, help="File containing problem instances, can be local file or url")
-    parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
+        url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob009_perfect_squares.json"
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument('-instance', nargs='?', default=name, help="Name of the problem instance found in file 'filename'")
+        parser.add_argument('-filename', nargs='?', default=url, help="File containing problem instances, can be local file or url")
+        parser.add_argument('--list-instances', help='List all problem instances', action='store_true')
 
-    args = parser.parse_args()
+        args = parser.parse_args()
 
-    if "http" in args.filename:
-        problem_data = requests.get(args.filename).json()
-    else:
-        with open(args.filename, "r") as f:
-            problem_data = json.load(f)
+        if "http" in args.filename:
+            problem_data = requests.get(args.filename).json()
+        else:
+            with open(args.filename, "r") as f:
+                problem_data = json.load(f)
 
-    if args.list_instances:
-        _print_instances(problem_data)
-        exit(0)
+        if args.list_instances:
+            _print_instances(problem_data)
+            exit(0)
 
-    problem_params = _get_instance(problem_data, args.instance)
-    print("Problem name:", problem_params["name"])
+        problem_params = _get_instance(problem_data, args.instance)
+        print("Problem name:", problem_params["name"])
 
-    model, (x_coords, y_coords) = perfect_squares(**problem_params)
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, (x_coords, y_coords) = perfect_squares(**problem_params)
+            model_creation_time = timeit.default_timer() - start_model_time
+            
+            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=20)
+            if ret:
+                print("Solved this problem")
+                return model_creation_time, transform_time, solve_time, num_branches
+                
+            elif model.status().runtime > 19:
+                print("This problem passes the time limit")
+                return 408, 408, 408, 408
+            else:
+                print("Model is unsatisfiable!")
+                return 400, 400, 400, 400
 
-    if model.solve():
-        np.set_printoptions(linewidth=problem_params['base']*5, threshold=np.inf)
+        for slvr in ["ortools"]:
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
 
-        base, sides = problem_params['base'], problem_params['sides']
-        x_coords, y_coords = x_coords.value(), y_coords.value()
-        big_square = np.zeros(dtype=str, shape=(base, base))
-        for i, (x, y) in enumerate(zip(x_coords, y_coords)):
-            big_square[x:x + sides[i], y:y + sides[i]] = chr(i+65)
+            for lp in range(nb_iterations):
+                # Disable garbage collection for timing measurements
+                gc.disable()
 
-        print(np.array2string(big_square,formatter={'str_kind': lambda v: v}))
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                model_creation_time, transform_time, solve_time, num_branches = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
 
-    else:
-        raise ValueError(f"Problem is unsatisfiable")
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
 
+                # Re-enable garbage collection
+                gc.enable()
+
+            average_model_creation_time = sum(total_model_creation_time) / nb_iterations 
+            average_transform_time = sum(total_transform_time) / nb_iterations
+            average_solve_time = sum(total_solve_time) / nb_iterations
+            average_execution_time = sum(total_execution_time) / nb_iterations
+            average_num_branches = sum(total_num_branches) / nb_iterations
+
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/perfect_squares.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")

@@ -5,10 +5,14 @@ Problem 084 on CSPlib
 Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import sys
+import gc
+sys.path.append('../cpmpy')
 
+# load the libraries
 import numpy as np
 from cpmpy import *
-
+import timeit
+from prettytable import PrettyTable
 
 def PAF(arr, s):
     return sum(arr * np.roll(arr,-s))
@@ -36,15 +40,58 @@ def hadmard_matrix(l=5):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-length", type=int, default=5, help="Length of sequence")
+    nb_iterations = 10
 
-    l = parser.parse_args().length
+    tablesp_ortools =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = f'Results of the Hadamard matrix problem with CSE (average of {nb_iterations} iterations)'
+    tablesp_ortools_noCSE =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_noCSE.title = f'Results of the Hadamard matrix problem without CSE (average of {nb_iterations} iterations)'    
 
-    model, (a,b) = hadmard_matrix(l)
+    for lngth in range(17, 35, 2):
+        parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.add_argument("-length", type=int, default=lngth, help="Length of sequence")
 
-    if model.solve():
-        print(f"A: {a.value()}")
-        print(f"B: {b.value()}")
-    else:
-        raise ValueError("Model is unsatisfiable")
+        l = parser.parse_args().length
+        print(l)
+
+        def run_code(slvr):
+            start_model_time = timeit.default_timer()
+            model, (a,b) = hadmard_matrix(l)
+            model_creation_time = timeit.default_timer() - start_model_time
+            return model.solve(solver=slvr, time_limit=30), model_creation_time
+        
+        for slvr in ["ortools"]:
+            total_model_creation_time = []
+            total_transform_time = []
+            total_solve_time = []
+            total_execution_time = []
+            total_num_branches = []
+
+            for lp in range(nb_iterations):
+                # Disable garbage collection for timing measurements
+                gc.disable()
+
+                # Measure the model creation and execution time
+                start_time = timeit.default_timer()
+                (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code(slvr)
+                execution_time = timeit.default_timer() - start_time
+
+                total_model_creation_time.append(model_creation_time)
+                total_transform_time.append(transform_time)
+                total_solve_time.append(solve_time)
+                total_execution_time.append(execution_time)
+                total_num_branches.append(num_branches)
+
+                # Re-enable garbage collection
+                gc.enable()
+
+            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
+            average_transform_time = sum(total_transform_time) / nb_iterations
+            average_solve_time = sum(total_solve_time) / nb_iterations
+            average_execution_time = sum(total_execution_time) / nb_iterations
+            average_num_branches = sum(total_num_branches) / nb_iterations
+            if slvr == 'ortools':
+                tablesp_ortools.add_row([l, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                with open("cpmpy/timing_results/hadamard_matrix_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools))
+                    f.write("\n")
