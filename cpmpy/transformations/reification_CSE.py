@@ -6,7 +6,7 @@ from ..expressions.variables import _BoolVarImpl, _NumVarImpl
 from ..expressions.python_builtins import all
 from ..expressions.utils import is_any_list
 from .flatten_model_CSE import flatten_constraint, get_or_make_var
-from .negation_CSE import recurse_negation
+from .negation import recurse_negation
 
 """
   Transformations regarding reification constraints.

@@ -87,7 +87,7 @@ from ..expressions.core import *
 from ..expressions.core import _wsum_should, _wsum_make
 from ..expressions.variables import _NumVarImpl, _IntVarImpl, _BoolVarImpl, NegBoolView
 from ..expressions.utils import is_num, is_any_list, is_boolexpr
-from .negation_CSE import recurse_negation, push_down_negation
+from .negation import recurse_negation, push_down_negation
 
 
 def flatten_model(orig_model):
