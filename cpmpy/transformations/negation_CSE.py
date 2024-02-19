@@ -2,7 +2,7 @@ import copy
 import warnings  # for deprecation warning
 import numpy as np
 
-from .normalize_CSE import toplevel_list
+from .normalize import toplevel_list
 from ..expressions.core import Expression, Comparison, Operator, BoolVal
 from ..expressions.variables import _BoolVarImpl, _NumVarImpl
 from ..expressions.utils import is_any_list

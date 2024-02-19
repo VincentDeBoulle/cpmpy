@@ -36,7 +36,7 @@ from ..expressions.utils import is_num, is_any_list, eval_comparison, flatlist
 from ..transformations.decompose_global import decompose_in_tree
 from ..transformations.get_variables import get_variables
 from ..transformations.flatten_model_CSE import flatten_constraint, flatten_objective
-from ..transformations.normalize_CSE import toplevel_list
+from ..transformations.normalize import toplevel_list
 from ..transformations.reification_CSE import only_implies, reify_rewrite, only_bv_reifies
 from ..transformations.comparison_CSE import only_numexpr_equality
 

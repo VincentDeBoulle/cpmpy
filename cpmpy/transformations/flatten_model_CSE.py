@@ -82,7 +82,7 @@ import math
 import builtins
 import numpy as np
 
-from .normalize_CSE import toplevel_list, simplify_boolean
+from .normalize import toplevel_list, simplify_boolean
 from ..expressions.core import *
 from ..expressions.core import _wsum_should, _wsum_make
 from ..expressions.variables import _NumVarImpl, _IntVarImpl, _BoolVarImpl, NegBoolView

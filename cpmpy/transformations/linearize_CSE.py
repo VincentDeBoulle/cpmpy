@@ -39,7 +39,7 @@ General comparisons or expressions
 """
 import copy
 import numpy as np
-from cpmpy.transformations.normalize_CSE import toplevel_list
+from cpmpy.transformations.normalize import toplevel_list
 
 from .flatten_model_CSE import flatten_constraint, get_or_make_var
 from .get_variables import get_variables
