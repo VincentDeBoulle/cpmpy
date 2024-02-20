@@ -5,6 +5,7 @@ files = [
     "examples/csplib/prob007_all_interval.py",
     "examples/csplib/prob049_number_partitioning.py",
     "examples/csplib/prob054_n_queens.py",
+    "examples/csplib/duplicates.py"
 ]
 
 for file_name in files:

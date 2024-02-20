@@ -255,8 +255,20 @@ def flatten_constraint(expr, expr_dict=None):
                     (lhs, lcons) = get_or_make_var(lexpr, expr_dict)
             else:
                 (lhs, lcons) = normalized_numexpr(lexpr, expr_dict)
-
-            newlist.append(Comparison(exprname, lhs, rvar))
+                if lhs in expr_dict:
+                    print("oke")
+                    if str(expr_dict[lhs]) != str(rvar):
+                        print("nee")
+                        lhs = expr_dict[lhs]
+                        print(lhs)
+                if lhs not in expr_dict and not isinstance(lhs, int) and exprname == "==":
+                    expr_dict[lhs] = rvar
+                    print(expr_dict)
+                
+            if not isinstance(lhs, int):
+                newlist.append(Comparison(exprname, lhs, rvar))
+            else:
+                newlist.append(Comparison(exprname, rvar, lhs))
             newlist.extend(lcons)
             newlist.extend(rcons)
 
