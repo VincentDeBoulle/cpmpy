@@ -52,7 +52,7 @@ def number_partitioning(n=8):
 if __name__ == "__main__":
     import argparse
 
-    nb_iterations = 1
+    nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools.title = 'Results of the Number Partitioning problem without CSE'
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools_factor.title = 'Results of the Number Partitioning problem'    
 
-    for nb in range(20,21,2):
+    for nb in range(10,30,2):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Amount of numbers to partition")
 
