@@ -35,10 +35,10 @@ from ..expressions.globalconstraints import GlobalConstraint
 from ..expressions.utils import is_num, is_any_list, eval_comparison, flatlist
 from ..transformations.decompose_global import decompose_in_tree
 from ..transformations.get_variables import get_variables
-from ..transformations.flatten_model import flatten_constraint, flatten_objective
+from ..transformations.flatten_model_CSE import flatten_constraint, flatten_objective
 from ..transformations.normalize import toplevel_list
-from ..transformations.reification import only_implies, reify_rewrite, only_bv_reifies
-from ..transformations.comparison import only_numexpr_equality
+from ..transformations.reification_CSE import only_implies, reify_rewrite, only_bv_reifies
+from ..transformations.comparison_CSE import only_numexpr_equality
 
 class CPM_ortools_CSE(SolverInterface):
     """
@@ -265,7 +265,7 @@ class CPM_ortools_CSE(SolverInterface):
             are premanently posted to the solver)
         """
         # make objective function non-nested
-        (flat_obj, flat_cons) = flatten_objective(expr)
+        (flat_obj, flat_cons) = flatten_objective(expr, expr_dict=self.expr_dict)
         self += flat_cons  # add potentially created constraints
         get_variables(flat_obj, collect=self.user_vars)  # add objvars to vars
 
@@ -330,11 +330,11 @@ class CPM_ortools_CSE(SolverInterface):
         cpm_cons = toplevel_list(cpm_expr)
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
-        cpm_cons = flatten_constraint(cpm_cons)  # flat normal form
-        cpm_cons = reify_rewrite(cpm_cons, supported=frozenset(['sum', 'wsum']))  # constraints that support reification
-        cpm_cons = only_numexpr_equality(cpm_cons, supported=frozenset(["sum", "wsum", "sub"]))  # supports >, <, !=
-        cpm_cons = only_bv_reifies(cpm_cons)
-        cpm_cons = only_implies(cpm_cons)  # everything that can create
+        cpm_cons = flatten_constraint(cpm_cons, expr_dict=self.expr_dict)  # flat normal form
+        cpm_cons = reify_rewrite(cpm_cons, supported=frozenset(['sum', 'wsum']), expr_dict=self.expr_dict)  # constraints that support reification
+        cpm_cons = only_numexpr_equality(cpm_cons, supported=frozenset(["sum", "wsum", "sub"]), expr_dict=self.expr_dict)  # supports >, <, !=
+        cpm_cons = only_bv_reifies(cpm_cons, expr_dict=self.expr_dict)
+        cpm_cons = only_implies(cpm_cons, expr_dict=self.expr_dict)  # everything that can create
                                              # reified expr must go before this
         return cpm_cons
 
