@@ -17,15 +17,16 @@ See also my CPMpy page: http://hakank.org/cpmpy/
 
 Modified by Ignace Bleukx
 """
+import random
 import sys
 sys.path.append('../cpmpy')
 
+# load the libraries
 import numpy as np
 from cpmpy import *
 import timeit
 from prettytable import PrettyTable
 import gc
-import random
 
 def n_queens(n=16):
 
@@ -54,17 +55,19 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = f'Results of the N-Queens problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_noCSE.title = f'Results of the N-Queens problem without CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools.title = 'Results of the N-Queens problem without CSE'
+    tablesp_ortools_CSE =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = 'Results of the N-Queens problem with CSE' 
+    tablesp_ortools_factor =  PrettyTable(['Number of Queens', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_factor.title = 'Results of the N-Queens problem'   
 
-    for nb in range(500, 550, 5):
+    for nb in range(100, 151, 5):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Number of queens")
         parser.add_argument("--solution_limit", type=int, default=0, help="Number of solutions, find all by default")
 
         args = parser.parse_args()
-
+        
         def run_code(slvr):
             start_model_time = timeit.default_timer()
             model, (queens,) = n_queens(args.n)
@@ -72,8 +75,8 @@ if __name__ == "__main__":
             #n_sols = model.solveAll(solution_limit=args.solution_limit, display=lambda: print_sol(queens))
             print("queens:{}".format(args.n))
             return model.solve(), model_creation_time
-
-        for slvr in ["ortools"]:
+            
+        for slvr in ["ortools", "ortools_2"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -82,7 +85,6 @@ if __name__ == "__main__":
 
             for lp in range(nb_iterations):
                 random.seed(lp)
-
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
@@ -100,14 +102,36 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
 
-            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
-            average_transform_time = sum(total_transform_time) / nb_iterations
-            average_solve_time = sum(total_solve_time) / nb_iterations
-            average_execution_time = sum(total_execution_time) / nb_iterations
-            average_num_branches = sum(total_num_branches) / nb_iterations
-
             if slvr == 'ortools':
+                average_model_creation_time = sum(total_model_creation_time) / nb_iterations 
+                average_transform_time = sum(total_transform_time) / nb_iterations
+                average_solve_time = sum(total_solve_time) / nb_iterations 
+                average_execution_time = sum(total_execution_time) / nb_iterations 
+                average_num_branches = sum(total_num_branches) / nb_iterations 
+
                 tablesp_ortools.add_row([nb, n_sols, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/n_queens_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/n_queens.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+            elif slvr == 'ortools_2':
+                average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
+                average_transform_time_2 = sum(total_transform_time) / nb_iterations
+                average_solve_time_2 = sum(total_solve_time) / nb_iterations
+                average_execution_time_2 = sum(total_execution_time) / nb_iterations 
+                average_num_branches_2 = sum(total_num_branches) / nb_iterations
+
+                tablesp_ortools_CSE.add_row([nb, n_sols, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
+                with open("cpmpy/timing_results/n_queens_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
+                    f.write("\n")
+
+                factor_model_creation_time = average_model_creation_time / average_model_creation_time_2
+                factor_tranform_time = average_transform_time / average_transform_time_2
+                factor_solve_time = average_solve_time / average_solve_time_2
+                factor_execution_time = average_execution_time / average_execution_time_2
+                factor_num_branches = average_num_branches / average_num_branches_2
+
+                tablesp_ortools_factor.add_row([nb, n_sols, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
+                with open("cpmpy/CSE_results/n_queens.txt", "w") as f:
+                    f.write(str(tablesp_ortools_factor))
                     f.write("\n")

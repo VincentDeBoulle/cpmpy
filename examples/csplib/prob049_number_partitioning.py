@@ -55,17 +55,19 @@ if __name__ == "__main__":
     nb_iterations = 10
 
     tablesp_ortools =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = f'Results of the Number Partitioning problem with CSE (average of {nb_iterations} iterations)'
-    tablesp_ortools_noCSE =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_noCSE.title = f'Results of the Number Partitioning problem without CSE (average of {nb_iterations} iterations)'    
+    tablesp_ortools.title = 'Results of the Number Partitioning problem without CSE'
+    tablesp_ortools_CSE =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = 'Results of the Number Partitioning problem with CSE'    
+    tablesp_ortools_factor =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_factor.title = 'Results of the Number Partitioning problem'    
 
-    for nb in range(20,201,10):
+    for nb in range(10,30,2):
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-n", type=int, default=nb, help="Amount of numbers to partition")
 
         n = parser.parse_args().n
         print(n)
-
+        
         def create_model():
             return number_partitioning(n)
 
@@ -77,7 +79,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr, time_limit=30), model_creation_time
 
-        for slvr in ["ortools"]:
+        for slvr in ["ortools", "ortools_2"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -104,14 +106,37 @@ if __name__ == "__main__":
                 # Re-enable garbage collection
                 gc.enable()
 
-            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
-            average_transform_time = sum(total_transform_time) / nb_iterations
-            average_solve_time = sum(total_solve_time) / nb_iterations
-            average_execution_time = sum(total_execution_time) / nb_iterations
-            average_num_branches = sum(total_num_branches) / nb_iterations
-
             if slvr == 'ortools':
+                average_model_creation_time = sum(total_model_creation_time) / nb_iterations 
+                average_transform_time = sum(total_transform_time) / nb_iterations
+                average_solve_time = sum(total_solve_time) / nb_iterations 
+                average_execution_time = sum(total_execution_time) / nb_iterations 
+                average_num_branches = sum(total_num_branches) / nb_iterations 
+
                 tablesp_ortools.add_row([nb, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/number_partitioning_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/number_partitioning.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+
+            elif slvr == 'ortools_2':
+                average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
+                average_transform_time_2 = sum(total_transform_time) / nb_iterations
+                average_solve_time_2 = sum(total_solve_time) / nb_iterations
+                average_execution_time_2 = sum(total_execution_time) / nb_iterations 
+                average_num_branches_2 = sum(total_num_branches) / nb_iterations
+
+                tablesp_ortools_CSE.add_row([nb, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
+                with open("cpmpy/timing_results/number_partitioning_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
+                    f.write("\n")
+
+                factor_model_creation_time = average_model_creation_time / average_model_creation_time_2
+                factor_tranform_time = average_transform_time / average_transform_time_2
+                factor_solve_time = average_solve_time / average_solve_time_2
+                factor_execution_time = average_execution_time / average_execution_time_2
+                factor_num_branches = average_num_branches / average_num_branches_2
+
+                tablesp_ortools_factor.add_row([nb, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
+                with open("cpmpy/CSE_results/number_partitioning.txt", "w") as f:
+                    f.write(str(tablesp_ortools_factor))
                     f.write("\n")
