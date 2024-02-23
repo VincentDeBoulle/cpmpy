@@ -17,6 +17,7 @@ the squares (greater than one) are placed in a rectangle.
 Inspired by implementation of Vessel Packing problem (008)
 Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import random
 import sys
 import numpy as np
 from prettytable import PrettyTable
@@ -132,6 +133,8 @@ if __name__ == "__main__":
                 return 400, 400, 400, 400
 
         for slvr in ["ortools", "ortools_2"]:
+            random.seed(0)
+
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []

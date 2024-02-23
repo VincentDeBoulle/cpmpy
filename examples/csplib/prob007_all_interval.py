@@ -74,6 +74,8 @@ if __name__ == "__main__":
     tablesp_ortools_factor.title = 'Results of the All Interval problem'
 
     for lngth in range(15, 30):
+        random.seed(0)
+        
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("-length", type=int,help="Length of array, 12 by default", default=lngth)
         parser.add_argument("--solution_limit", type=int, help="Number of solutions to find, find all by default", default=0)
@@ -95,7 +97,6 @@ if __name__ == "__main__":
             total_num_branches = []
 
             for lp in range(nb_iterations):
-                random.seed(lp)
                 
                 # Disable garbage collection for timing measurements
                 gc.disable()

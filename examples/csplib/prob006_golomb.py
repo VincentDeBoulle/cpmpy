@@ -20,6 +20,7 @@ See also my cpmpy page: http://www.hakank.org/cpmpy/
 
 Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
+import random
 import sys
 sys.path.append('../cpmpy')
 
@@ -79,6 +80,8 @@ if __name__ == "__main__":
             return model.solve(solver=slvr), model_creation_time
 
         for slvr in ['ortools', 'ortools_2']:
+            random.seed(0)
+
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []

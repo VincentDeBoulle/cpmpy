@@ -77,6 +77,8 @@ if __name__ == "__main__":
             return model.solve(), model_creation_time
             
         for slvr in ["ortools", "ortools_2"]:
+            random.seed(0)
+
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
@@ -84,7 +86,6 @@ if __name__ == "__main__":
             total_num_branches = []
 
             for lp in range(nb_iterations):
-                random.seed(lp)
                 # Disable garbage collection for timing measurements
                 gc.disable()
 

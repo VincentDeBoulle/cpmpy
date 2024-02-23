@@ -55,6 +55,8 @@ if __name__ == "__main__":
     tablesp_ortools_factor.title = 'Results of the Auto Correlation problem'
 
     for lngth in range(10, 20):
+        random.seed(0)
+
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument("-length", nargs='?', type=int, default=lngth, help="Length of bitarray")
 
@@ -79,9 +81,7 @@ if __name__ == "__main__":
             total_execution_time = []
             total_num_branches = []
 
-            for lp in range(nb_iterations):
-                random.seed(lp)
-                
+            for lp in range(nb_iterations):                
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
