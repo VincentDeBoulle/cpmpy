@@ -57,6 +57,11 @@ if __name__ == "__main__":
         # Set a random seed for reproducibility reasons
         random.seed(0)
 
+        def create_model():
+            return auto_correlation(length)
+        
+        model_creation_time = timeit.timeit(create_model, number = nb_iterations) / nb_iterations
+
         def run_code(slvr):
             start_model_time = timeit.default_timer()
 

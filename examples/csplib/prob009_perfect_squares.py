@@ -20,14 +20,19 @@ Model created by Ignace Bleukx, ignace.bleukx@kuleuven.be
 import random
 import sys
 import numpy as np
-from prettytable import PrettyTable
-sys.path.append('../cpmpy')
-
-from cpmpy import *
-from cpmpy.expressions.utils import all_pairs
 import json
 import timeit
 import gc
+import psutil
+import argparse
+import json
+import requests
+
+sys.path.append('../cpmpy')
+
+from cpmpy import *
+from prettytable import PrettyTable
+from cpmpy.expressions.utils import all_pairs
 
 def perfect_squares(base, sides, **kwargs):
     model = Model()
@@ -73,10 +78,6 @@ def _print_instances(data):
 
 if __name__ == "__main__":
 
-    import argparse
-    import json
-    import requests
-
     nb_iterations = 10
 
     # Get all problem names out of the JSON (future proof if json changes)
@@ -85,15 +86,19 @@ if __name__ == "__main__":
     
     problem_names = [problem['name'] for problem in data]
 
-    tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools.title = 'Results of the Perfect Squares problem without CSE'
-    tablesp_ortools_CSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_CSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_CSE.title = 'Results of the Perfect Squares problem with CSE'    
-    tablesp_ortools_factor =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches'])
+    tablesp_ortools_factor =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the Perfect Squares problem'  
 
     for name in problem_names:
-    # argument parsing
+
+        # Set a random seed for reproducibility reasons
+        random.seed(0)
+
+        # argument parsing
         url = "https://raw.githubusercontent.com/CPMpy/cpmpy/csplib/examples/csplib/prob009_perfect_squares.json"
         parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument('-instance', nargs='?', default=name, help="Name of the problem instance found in file 'filename'")
@@ -133,6 +138,8 @@ if __name__ == "__main__":
                 return 400, 400, 400, 400
 
         for slvr in ["ortools", "ortools_2"]:
+            
+            # Set random seed for same random conditions in both iterations
             random.seed(0)
 
             total_model_creation_time = []
@@ -140,21 +147,26 @@ if __name__ == "__main__":
             total_solve_time = []
             total_execution_time = []
             total_num_branches = []
+            total_mem_usage = []
 
             for lp in range(nb_iterations):
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
-                # Measure the model creation and execution time
+                initial_memory = psutil.Process().memory_info().rss
                 start_time = timeit.default_timer()
+
                 model_creation_time, transform_time, solve_time, num_branches = run_code(slvr)
+                
                 execution_time = timeit.default_timer() - start_time
+                memory_usage = psutil.Process().memory_info().rss - initial_memory
 
                 total_model_creation_time.append(model_creation_time)
                 total_transform_time.append(transform_time)
                 total_solve_time.append(solve_time)
                 total_execution_time.append(execution_time)
                 total_num_branches.append(num_branches)
+                total_mem_usage.append(memory_usage)
 
                 # Re-enable garbage collection
                 gc.enable()
@@ -165,8 +177,9 @@ if __name__ == "__main__":
                 average_solve_time = sum(total_solve_time) / nb_iterations 
                 average_execution_time = sum(total_execution_time) / nb_iterations 
                 average_num_branches = sum(total_num_branches) / nb_iterations 
+                average_mem_usage = sum(total_mem_usage) / nb_iterations
 
-                tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
+                tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches, average_mem_usage])
                 with open("cpmpy/timing_results/perfect_squares.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
@@ -177,8 +190,9 @@ if __name__ == "__main__":
                 average_solve_time_2 = sum(total_solve_time) / nb_iterations
                 average_execution_time_2 = sum(total_execution_time) / nb_iterations 
                 average_num_branches_2 = sum(total_num_branches) / nb_iterations
+                average_mem_usage_2 = sum(total_mem_usage) / nb_iterations
 
-                tablesp_ortools_CSE.add_row([name, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
+                tablesp_ortools_CSE.add_row([name, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2, average_mem_usage_2])
                 with open("cpmpy/timing_results/perfect_squares_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_CSE))
                     f.write("\n")
@@ -188,8 +202,9 @@ if __name__ == "__main__":
                 factor_solve_time = average_solve_time / average_solve_time_2
                 factor_execution_time = average_execution_time / average_execution_time_2
                 factor_num_branches = average_num_branches / average_num_branches_2
+                factor_mem_usage = average_mem_usage / average_mem_usage_2
 
-                tablesp_ortools_factor.add_row([name, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
+                tablesp_ortools_factor.add_row([name, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches, factor_mem_usage])
                 with open("cpmpy/CSE_results/perfect_squares.txt", "w") as f:
                     f.write(str(tablesp_ortools_factor))
                     f.write("\n")
