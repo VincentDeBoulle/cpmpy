@@ -8,8 +8,13 @@ from cpmpy.expressions.variables import _BoolVarImpl, _NumVarImpl
 
 
 def order_constraint(lst_of_expr):
+    """
+    This function takes a list of constraints and orders them internally alphabetically.
+    For example: [B + A + C == D; (B + A)**2] --> [A + B + C == D; (A + B)**2]
+    """
 
     newlist = []
+    
     for cpm_expr in lst_of_expr:
 
         if isinstance(cpm_expr, Comparison):
@@ -24,9 +29,9 @@ def order_constraint(lst_of_expr):
             if isinstance(rhs, Operator):
                 rhs = create_sorted_expression(rhs.name, rhs.args)
             if isinstance(lhs, Abs):
-                lhs = abs(order_expressions(lhs.args[0]))
+                lhs = abs(order_expression_arg(lhs.args[0]))
             if isinstance(rhs, Abs):
-                rhs = abs(order_expressions(rhs.args[0]))
+                rhs = abs(order_expression_arg(rhs.args[0]))
 
             newlist.append(eval_comparison(cpm_expr.name, lhs, rhs))
 
@@ -50,23 +55,26 @@ def order_constraint(lst_of_expr):
 
 
 def create_sorted_expression(op, args):
+    """
+    Orders an expression alphabetically
+    """
     if op == "-":
         if isinstance(args[0], (_NumVarImpl)):
             return Operator(op, args)
         return Operator(op, [create_sorted_expression(args[0].name, args[0].args)])
     elif op == "sum":
-        new_args = sorted([order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
+        new_args = sorted([order_expression_arg(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl, np.int64, Comparison)) else arg for arg in args], key= str)
         return Operator(op, new_args)
     elif op == "pow":
-        return Operator(op, [order_expressions(args[0]), args[1]])
+        return Operator(op, [order_expression_arg(args[0]), args[1]])
     elif op == "mul":
-        return order_expressions(args[0] * args[1])
+        return order_expression_arg(args[0] * args[1])
     elif op == "div":
-        return order_expressions(args[0]) // order_expressions(args[1])
+        return order_expression_arg(args[0]) // order_expression_arg(args[1])
     elif op == "mod":
-        return order_expressions(args[0]) % order_expressions(args[1])
+        return order_expression_arg(args[0]) % order_expression_arg(args[1])
     elif op == "wsum":
-        new_args = [order_expressions(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
+        new_args = [order_expression_arg(arg) if not isinstance(arg, (_BoolVarImpl, _NumVarImpl)) else arg for arg in args[1]]
         str_var = [str(s) + str(e) for s, e in zip(args[0], new_args)]
         mapping = {s: [args[0][i], new_args[i]] for i, s in enumerate(str_var)}
         str_var = sorted(str_var)
@@ -76,9 +84,9 @@ def create_sorted_expression(op, args):
         return Operator(op, new_args)
     return Operator(op, args)
 
-def order_expressions(expr):
+def order_expression_arg(expr):
     """
-    Orders an expression alphabetically
+    Orders an expressions arguments alphabetically
     """
     if isinstance(expr, (_BoolVarImpl, _NumVarImpl, int, float)):
             return expr
@@ -86,7 +94,7 @@ def order_expressions(expr):
         if isinstance(expr.args[0], (_BoolVarImpl, _NumVarImpl)):
             return expr
         else:
-            ord_expr = order_expressions(expr.args[0])
+            ord_expr = order_expression_arg(expr.args[0])
             return Operator("-", [ord_expr])
     elif expr.name == "mul":
         lst = sorted(make_mul_list(expr), key=str)
