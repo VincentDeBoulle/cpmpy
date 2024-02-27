@@ -255,9 +255,6 @@ def flatten_constraint(expr, expr_dict=None):
                     (lhs, lcons) = get_or_make_var(lexpr, expr_dict)
             else:
                 (lhs, lcons) = normalized_numexpr(lexpr, expr_dict)
-            print(lhs)
-            print(rvar)
-            print(expr_dict)
             if lhs in expr_dict:
                 if str(expr_dict[lhs]) != str(rvar):
                     lhs = expr_dict[lhs]
