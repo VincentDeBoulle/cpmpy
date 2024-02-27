@@ -26,8 +26,6 @@
 import sys  # for stdout checking
 import numpy as np
 
-from cpmpy.transformations.CSE_transformations import remove_redundant
-
 from .solver_interface import SolverInterface, SolverStatus, ExitStatus
 from ..exceptions import NotSupportedError
 from ..expressions.core import Expression, Comparison, Operator, BoolVal
