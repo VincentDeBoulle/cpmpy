@@ -327,16 +327,23 @@ class CPM_ortools_CSE(SolverInterface):
 
         :return: list of Expression
         """
+        print("1: ", cpm_expr)
         cpm_cons = toplevel_list(cpm_expr)
+        print("2: ", cpm_cons)
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
+        print("3: ", cpm_cons)
         cpm_cons = flatten_constraint(cpm_cons, expr_dict=self.expr_dict)  # flat normal form
+        print("4: ", cpm_cons)
         cpm_cons = reify_rewrite(cpm_cons, supported=frozenset(['sum', 'wsum']), expr_dict=self.expr_dict)  # constraints that support reification
+        print("5: ", cpm_cons)
         cpm_cons = only_numexpr_equality(cpm_cons, supported=frozenset(["sum", "wsum", "sub"]), expr_dict=self.expr_dict)  # supports >, <, !=
+        print("6: ", cpm_cons)
         cpm_cons = only_bv_reifies(cpm_cons, expr_dict=self.expr_dict)
+        print("7: ", cpm_cons)
         cpm_cons = only_implies(cpm_cons, expr_dict=self.expr_dict)  # everything that can create
                                              # reified expr must go before this
-        print(cpm_cons)
+        print("end: ", cpm_cons)
         return cpm_cons
 
     def __add__(self, cpm_expr):
