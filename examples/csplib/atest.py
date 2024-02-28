@@ -45,12 +45,12 @@ def atest(n = 100):
 if __name__ == "__main__":
     nb_iterations = 10
 
-    tablesp_ortools =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = 'Results of the Number Partitioning problem without CSE'
+    tablesp_ortools =  PrettyTable(['Number of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = 'Results of a problem with duplicates without CSE'
     tablesp_ortools_CSE =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_CSE.title = 'Results of the Number Partitioning problem with CSE'    
+    tablesp_ortools_CSE.title = 'Results of a problem with duplicates with CSE'    
     tablesp_ortools_factor =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_factor.title = 'Results of the Number Partitioning problem'
+    tablesp_ortools_factor.title = 'Results of a problem with duplicates'
 
     for n in range(10, 200, 10):
 
@@ -122,6 +122,6 @@ if __name__ == "__main__":
                 factor_num_branches = average_num_branches / average_num_branches_2
 
                 tablesp_ortools_factor.add_row([n, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
-                with open("cpmpy/CSE_results/atest.txt", "w") as f:
+                with open("cpmpy/CSE_results/atest_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_factor))
                     f.write("\n")
