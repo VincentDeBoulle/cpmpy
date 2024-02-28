@@ -122,6 +122,6 @@ if __name__ == "__main__":
                 factor_num_branches = average_num_branches / average_num_branches_2
 
                 tablesp_ortools_factor.add_row([n, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
-                with open("cpmpy/CSE_results/atest.txt", "w") as f:
+                with open("cpmpy/CSE_results/atest_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_factor))
                     f.write("\n")
