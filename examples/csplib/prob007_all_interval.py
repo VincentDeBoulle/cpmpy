@@ -25,15 +25,16 @@ Modified by Ignace Bleukx, ignace.bleukx@kuleuven.be
 """
 import argparse
 import sys
+import psutil
+import timeit
+import gc
+import random
+import numpy as np
 
 sys.path.append('../cpmpy')
 
 from cpmpy import *
-import numpy as np
-import timeit
-import gc
 from prettytable import PrettyTable
-import random
 
 def all_interval(n=12):
 
@@ -66,60 +67,103 @@ if __name__ == "__main__":
 
     nb_iterations = 10
 
-    tablesp_ortools = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools.title = 'Results of the All Interval problem with CSE (average of 10 iterations)'
-    tablesp_ortools_noCSE = PrettyTable(['length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches'])
-    tablesp_ortools_noCSE.title = 'Results of the All Interval problem without CSE (average of 10 iterations)'
+    tablesp_ortools = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches', 'Overall Memory Usage (Bytes)'])
+    tablesp_ortools.title = 'Results of the All Interval problem without CSE'
+    tablesp_ortools_CSE = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches', 'Overall Memory Usage (Bytes)'])
+    tablesp_ortools_CSE.title = 'Results of the All Interval problem with CSE'
+    tablesp_ortools_factor = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches', 'Overall Memory Usage (Bytes)'])
+    tablesp_ortools_factor.title = 'Results of the All Interval problem'
 
     for lngth in range(15, 30):
+
+        # Set a random seed for reproducibility reasons
+        random.seed(0)
+        
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("-length", type=int,help="Length of array, 12 by default", default=lngth)
         parser.add_argument("--solution_limit", type=int, help="Number of solutions to find, find all by default", default=0)
 
         print(lngth)
         args = parser.parse_args()
-
+        
         def run_code(slvr):
+
             start_model_time = timeit.default_timer()
+
             model, (x, diffs) = all_interval(args.length)
+
             model_creation_time = timeit.default_timer() - start_model_time
+
             return model.solve(solver=slvr), model_creation_time
 
-        for slvr in ["ortools"]:
+        for slvr in ["ortools", "ortools_CSE"]:
+            
+            # Set random seed for same random conditions in both iterations
+            random.seed(0)
+
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
             total_execution_time = []
             total_num_branches = []
+            total_mem_usage = []
 
             for lp in range(nb_iterations):
-                random.seed(lp)
-
                 # Disable garbage collection for timing measurements
                 gc.disable()
 
-                # Measure the model creation and execution time
+                initial_memory = psutil.Process().memory_info().rss
                 start_time = timeit.default_timer()
+
                 (n_sols, transform_time, solve_time, num_branches), model_creation_time = run_code(slvr)
+                
                 execution_time = timeit.default_timer() - start_time
+                memory_usage = psutil.Process().memory_info().rss - initial_memory
 
                 total_model_creation_time.append(model_creation_time)
                 total_transform_time.append(transform_time)
                 total_solve_time.append(solve_time)
                 total_execution_time.append(execution_time)
                 total_num_branches.append(num_branches)
+                total_mem_usage.append(memory_usage)
 
                 # Re-enable garbage collection
                 gc.enable()
 
-            average_model_creation_time = sum(total_model_creation_time) / nb_iterations
-            average_transform_time = sum(total_transform_time) / nb_iterations
-            average_solve_time = sum(total_solve_time) / nb_iterations
-            average_execution_time = sum(total_execution_time) / nb_iterations
-            average_num_branches = sum(total_num_branches) / nb_iterations
-
             if slvr == 'ortools':
-                tablesp_ortools.add_row([lngth, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/all_interval_CSE.txt", "w") as f:
+                average_model_creation_time = sum(total_model_creation_time) / nb_iterations 
+                average_transform_time = sum(total_transform_time) / nb_iterations
+                average_solve_time = sum(total_solve_time) / nb_iterations 
+                average_execution_time = sum(total_execution_time) / nb_iterations 
+                average_num_branches = sum(total_num_branches) / nb_iterations 
+                average_mem_usage = sum(total_mem_usage) / nb_iterations
+
+                tablesp_ortools.add_row([lngth, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches, average_mem_usage])
+                with open("cpmpy/timing_results/all_interval.txt", "w") as f:
                     f.write(str(tablesp_ortools))
+                    f.write("\n")
+
+            elif slvr == 'ortools_CSE':
+                average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
+                average_transform_time_2 = sum(total_transform_time) / nb_iterations
+                average_solve_time_2 = sum(total_solve_time) / nb_iterations
+                average_execution_time_2 = sum(total_execution_time) / nb_iterations 
+                average_num_branches_2 = sum(total_num_branches) / nb_iterations
+                average_mem_usage_2 = sum(total_mem_usage) / nb_iterations
+
+                tablesp_ortools_CSE.add_row([lngth, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2, average_mem_usage_2])
+                with open("cpmpy/timing_results/all_interval_CSE.txt", "w") as f:
+                    f.write(str(tablesp_ortools_CSE))
+                    f.write("\n")
+
+                factor_model_creation_time = average_model_creation_time / average_model_creation_time_2
+                factor_tranform_time = average_transform_time / average_transform_time_2
+                factor_solve_time = average_solve_time / average_solve_time_2
+                factor_execution_time = average_execution_time / average_execution_time_2
+                factor_num_branches = average_num_branches / average_num_branches_2
+                factor_mem_usage = average_mem_usage / average_mem_usage_2
+
+                tablesp_ortools_factor.add_row([lngth, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches, factor_mem_usage])
+                with open("cpmpy/CSE_results/all_interval.txt", "w") as f:
+                    f.write(str(tablesp_ortools_factor))
                     f.write("\n")
