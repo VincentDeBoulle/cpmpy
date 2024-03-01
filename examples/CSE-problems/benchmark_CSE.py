@@ -1,12 +1,9 @@
 import subprocess
 
 files = [
-    "examples/csplib/prob005_auto_correlation.py",
-    "examples/csplib/prob007_all_interval.py",
-    "examples/csplib/prob028_bibd.py",
-    "examples/csplib/prob049_number_partitioning.py",
-    "examples/csplib/prob054_n_queens.py",
-    "examples/csplib/duplicates.py"
+    "examples/CSE-problems/duplicates.py",
+    "examples/CSE-problems/permutations.py",
+    "examples/CSE-problems/permutations.py"
 ]
 
 for file_name in files:
