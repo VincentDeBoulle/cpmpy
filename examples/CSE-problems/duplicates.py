@@ -30,12 +30,12 @@ def duplicates(n= 10000):
 if __name__ == "__main__":
     nb_iterations = 10
 
-    tablesp_ortools =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = 'Results of the Number Partitioning problem without CSE'
-    tablesp_ortools_CSE =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_CSE.title = 'Results of the Number Partitioning problem with CSE'    
-    tablesp_ortools_factor =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_factor.title = 'Results of the Number Partitioning problem'
+    tablesp_ortools =  PrettyTable(['Numbers of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = 'Results of the Duplicates problem without CSE'
+    tablesp_ortools_CSE =  PrettyTable(['Numbers of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = 'Results of the Duplicates problem with CSE'    
+    tablesp_ortools_factor =  PrettyTable(['Numbers of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_factor.title = 'Results of the Duplicates problem'
 
     for n in range(1000, 100000, 500):
 

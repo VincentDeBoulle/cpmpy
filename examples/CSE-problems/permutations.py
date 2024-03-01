@@ -26,7 +26,7 @@ N = intvar(0, 1000)
 O = intvar(0, 1000)
 P = intvar(0, 1000)
 
-def atest(n = 100):
+def permutations(n = 100):
     model = Model()
 
     model += A + B == 50
@@ -45,22 +45,22 @@ def atest(n = 100):
 if __name__ == "__main__":
     nb_iterations = 10
 
-    tablesp_ortools =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = 'Results of the Number Partitioning problem without CSE'
-    tablesp_ortools_CSE =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_CSE.title = 'Results of the Number Partitioning problem with CSE'    
-    tablesp_ortools_factor =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_factor.title = 'Results of the Number Partitioning problem'
+    tablesp_ortools =  PrettyTable(['Amount of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = 'Results of the Permutations problem without CSE'
+    tablesp_ortools_CSE =  PrettyTable(['Amount of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = 'Results of the Permutations problem with CSE'    
+    tablesp_ortools_factor =  PrettyTable(['Number of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_factor.title = 'Results of the Permutations problem'
 
     for n in range(10, 200, 10):
 
         def create_model():
-            return atest(n)
+            return permutations(n)
         model_creation_time = timeit.timeit(create_model, number = 1)    
 
         def run_code(slvr):
             start_model_time = timeit.default_timer()
-            model = atest(n)
+            model = permutations(n)
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr, time_limit=30), model_creation_time
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
                 average_num_branches = sum(total_num_branches) / nb_iterations 
 
                 tablesp_ortools.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/atest.txt", "w") as f:
+                with open("cpmpy/timing_results/permutations.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
                 average_num_branches_2 = sum(total_num_branches) / nb_iterations
 
                 tablesp_ortools_CSE.add_row([n, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
-                with open("cpmpy/timing_results/atest.txt", "w") as f:
+                with open("cpmpy/timing_results/permutations_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_CSE))
                     f.write("\n")
 
@@ -122,6 +122,6 @@ if __name__ == "__main__":
                 factor_num_branches = average_num_branches / average_num_branches_2
 
                 tablesp_ortools_factor.add_row([n, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
-                with open("cpmpy/CSE_results/atest.txt", "w") as f:
+                with open("cpmpy/CSE_results/permutations.txt", "w") as f:
                     f.write(str(tablesp_ortools_factor))
                     f.write("\n")
