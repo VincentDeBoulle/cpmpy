@@ -152,7 +152,7 @@ if __name__ == "__main__":
                 print("Model is unsatisfiable!")
                 return 404, 404, 404, 404
         
-        for slvr in ["ortools", "ortools_2"]:
+        for slvr in ["ortools", "ortools_CSE"]:
 
             # Set random seed for same random conditions in both iterations
             random.seed(0)
@@ -199,7 +199,7 @@ if __name__ == "__main__":
                     f.write(str(tablesp_ortools))
                     f.write("\n")
 
-            elif slvr == 'ortools_2':
+            elif slvr == 'ortools_CSE':
                 average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
                 average_transform_time_2 = sum(total_transform_time) / nb_iterations
                 average_solve_time_2 = sum(total_solve_time) / nb_iterations
