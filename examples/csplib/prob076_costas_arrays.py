@@ -116,7 +116,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr), model_creation_time
 
-        for slvr in ["ortools", "ortools_2"]:
+        for slvr in ["ortools", "ortools_CSE"]:
             
             # Set random seed for same random conditions in both iterations
             random.seed(0)
@@ -163,7 +163,7 @@ if __name__ == "__main__":
                     f.write(str(tablesp_ortools))
                     f.write("\n")
 
-            if slvr == 'ortools_2':
+            if slvr == 'ortools_CSE':
                 average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
                 average_transform_time_2 = sum(total_transform_time) / nb_iterations
                 average_solve_time_2 = sum(total_solve_time) / nb_iterations

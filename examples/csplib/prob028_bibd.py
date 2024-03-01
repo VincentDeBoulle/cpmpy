@@ -94,7 +94,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr, time_limit=30), model_creation_time
 
-        for slvr in ["ortools", "ortools_2"]:
+        for slvr in ["ortools", "ortools_CSE"]:
             
             # Set random seed for same random conditions in both iterations
             random.seed(0)
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                 with open("cpmpy/timing_results/bibd.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
-            elif slvr == 'ortools_2':
+            elif slvr == 'ortools_CSE':
                 average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
                 average_transform_time_2 = sum(total_transform_time) / nb_iterations
                 average_solve_time_2 = sum(total_solve_time) / nb_iterations
