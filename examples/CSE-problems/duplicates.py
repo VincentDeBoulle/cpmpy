@@ -37,7 +37,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Numbers of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools_factor.title = 'Results of the Duplicates problem'
 
-    for n in range(1000, 100000, 500):
+    for n in range(1000, 10000, 500):
 
         def create_model():
             return duplicates(n)
