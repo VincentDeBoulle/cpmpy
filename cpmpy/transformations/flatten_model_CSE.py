@@ -584,5 +584,5 @@ def horn_clauses(cpm_cons):
                 new_expr_list.append(new_expr)
         else:
             new_expr_list.append(expr)
-        return new_expr_list
+    return new_expr_list
     
