@@ -7,59 +7,40 @@ sys.path.append('../cpmpy')
 
 from cpmpy import *
 from prettytable import PrettyTable
-from itertools import permutations
 
-A = intvar(0, 1000)
-B = intvar(0, 1000)
-C = intvar(0, 1000)
-D = intvar(0, 1000)
-E = intvar(0, 1000)
-F = intvar(0, 1000)
-G = intvar(0, 1000)
-H = intvar(0, 1000)
-I = intvar(0, 1000)
-J = intvar(0, 1000)
-K = intvar(0, 1000)
-L = intvar(0, 1000)
-M = intvar(0, 1000)
-N = intvar(0, 1000)
-O = intvar(0, 1000)
-P = intvar(0, 1000)
 
-def permutation(n = 100):
+def knights_tour(n):
     model = Model()
 
-    model += A + B == 50
-    model += B + A == C + D
-    model += ((A + B) + C) + D == E
+    tour = intvar(1, n, shape=n)
 
     for i in range(n):
-        lst = [F, G, H, I, J]
-        p = permutations(lst)
+        for j in range(n):
+            if (abs(i - j) == 1):
+                model += (tour[i] % n != tour[j] % n)
 
-        for per in p:
-            model += per[0] + per[1] + per[2] + per[3] + per [4] == O + P
-    
     return model
 
 if __name__ == "__main__":
+
     nb_iterations = 10
 
-    tablesp_ortools =  PrettyTable(['Amount of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools.title = 'Results of the Permutations problem without CSE'
-    tablesp_ortools_CSE =  PrettyTable(['Amount of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_CSE.title = 'Results of the Permutations problem with CSE'    
-    tablesp_ortools_factor =  PrettyTable(['Number of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
-    tablesp_ortools_factor.title = 'Results of the Permutations problem'
+    tablesp_ortools =  PrettyTable(['Size of n', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools.title = 'Results of the Knights Tour problem without CSE'
+    tablesp_ortools_CSE =  PrettyTable(['Size of n', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_CSE.title = 'Results of the Knights Tour problem with CSE'    
+    tablesp_ortools_factor =  PrettyTable(['Size of board', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
+    tablesp_ortools_factor.title = 'Results of the Knights Tour problem'
 
-    for n in range(10, 200, 10):
+
+    for n in range(100, 1501, 100):
 
         def run_code(slvr):
             start_model_time = timeit.default_timer()
-            model = permutation(n)
+            model = knights_tour(n)
             model_creation_time = timeit.default_timer() - start_model_time
-            return model.solve(solver=slvr, time_limit=30), model_creation_time
-
+            return model.solve(solver=slvr), model_creation_time
+        
         for slvr in ["ortools", "ortools_CSE"]:
             total_model_creation_time = []
             total_transform_time = []
@@ -95,7 +76,7 @@ if __name__ == "__main__":
                 average_num_branches = sum(total_num_branches) / nb_iterations 
 
                 tablesp_ortools.add_row([n, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches])
-                with open("cpmpy/timing_results/permutations.txt", "w") as f:
+                with open("cpmpy/timing_results/knights_tour.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
 
@@ -107,7 +88,7 @@ if __name__ == "__main__":
                 average_num_branches_2 = sum(total_num_branches) / nb_iterations
 
                 tablesp_ortools_CSE.add_row([n, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
-                with open("cpmpy/timing_results/permutations_CSE.txt", "w") as f:
+                with open("cpmpy/timing_results/knights_tour_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_CSE))
                     f.write("\n")
 
@@ -118,6 +99,6 @@ if __name__ == "__main__":
                 factor_num_branches = average_num_branches / average_num_branches_2
 
                 tablesp_ortools_factor.add_row([n, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches])
-                with open("cpmpy/CSE_results/permutations.txt", "w") as f:
+                with open("cpmpy/CSE_results/knights_tour.txt", "w") as f:
                     f.write(str(tablesp_ortools_factor))
                     f.write("\n")
