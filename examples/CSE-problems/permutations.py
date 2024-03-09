@@ -26,7 +26,7 @@ N = intvar(0, 1000)
 O = intvar(0, 1000)
 P = intvar(0, 1000)
 
-def permutations(n = 100):
+def permutation(n = 100):
     model = Model()
 
     model += A + B == 50
@@ -54,13 +54,10 @@ if __name__ == "__main__":
 
     for n in range(10, 200, 10):
 
-        def create_model():
-            return permutations(n)
-        model_creation_time = timeit.timeit(create_model, number = 1)    
 
         def run_code(slvr):
             start_model_time = timeit.default_timer()
-            model = permutations(n)
+            model = permutation(n)
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr, time_limit=30), model_creation_time
 
