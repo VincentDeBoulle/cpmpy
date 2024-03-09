@@ -10,7 +10,6 @@ def apply_CSE(cpm_cons):
 
     for expr in cpm_cons:
         if isinstance(expr, Comparison):
-            print("expr: ", expr)
             lhs, rhs = expr.args
             exprname = expr.name
 
