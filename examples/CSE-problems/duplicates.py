@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     for n in range(1000, 10001, 500):
 
-        print("n: \n")
+        print(f"n: {n}\n")
 
         def run_code(slvr):
             start_model_time = timeit.default_timer()

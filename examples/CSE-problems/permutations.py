@@ -52,7 +52,9 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Number of repetitions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches'])
     tablesp_ortools_factor.title = 'Results of the Permutations problem'
 
-    for n in range(10, 200, 10):
+    for n in range(10, 201, 10):
+
+        print(f"n: {n}\n")
 
 
         def run_code(slvr):
