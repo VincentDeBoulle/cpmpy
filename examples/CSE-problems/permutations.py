@@ -54,6 +54,8 @@ if __name__ == "__main__":
 
     for n in range(10, 200, 10):
 
+        print(f"n: {n}\n")
+
         def run_code(slvr):
             start_model_time = timeit.default_timer()
             model = permutation(n)
