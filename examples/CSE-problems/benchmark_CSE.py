@@ -3,7 +3,8 @@ import subprocess
 files = [
     "examples/CSE-problems/duplicates.py",
     "examples/CSE-problems/permutations.py",
-    "examples/CSE-problems/permutations.py"
+    "examples/CSE-problems/knights_tour.py",
+    "examples/CSE-problems/common_subs.py"
 ]
 
 for file_name in files:
