@@ -39,9 +39,7 @@ if __name__ == "__main__":
 
     for n in range(1000, 10001, 500):
 
-        def create_model():
-            return duplicates(n)
-        model_creation_time = timeit.timeit(create_model, number = 1)    
+        print(f"n: {n}\n")    
 
         def run_code(slvr):
             start_model_time = timeit.default_timer()
