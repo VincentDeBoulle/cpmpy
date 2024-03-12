@@ -261,16 +261,17 @@ class Expression(object):
     def __add__(self, other):
         neg_other = self.get_negation(other)
         if isinstance(self, Operator):
-            if str(neg_other) in [str(a) for a in self.args]:
-                self.args.remove(neg_other)
-                if len(self.args) == 0:
+            if len(self.args) == 1 and str(self) == str(neg_other):
+                return 0
+            if str(neg_other) in map(str, self.args):
+                self.args = [a for a in self.args if str(neg_other) != str(a)]
+                if not self.args:
                     return 0
                 elif len(self.args) == 1:
                     return self.args[0]
                 return self
-        else:
-            if str(neg_other) == str(self) and type(neg_other) == type(self):
-                return 0
+        elif str(neg_other) == str(self) and type(neg_other) == type(self):
+            return 0
 
         if is_num(other) and other == 0:
             return self
