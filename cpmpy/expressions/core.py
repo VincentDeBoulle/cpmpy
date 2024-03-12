@@ -341,6 +341,8 @@ class Expression(object):
     def __floordiv__(self, other):
         if is_num(other) and other == 1:
             return self
+        if str(self) == str(other) and type(self) == type(other):
+            return 1
         return Operator("div", [self, other])
 
     def __rfloordiv__(self, other):
