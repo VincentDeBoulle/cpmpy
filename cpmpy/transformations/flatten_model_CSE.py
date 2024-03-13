@@ -580,3 +580,18 @@ def normalized_numexpr(expr, expr_dict=None):
 
     raise Exception("Operator '{}' not allowed as numexpr".format(expr)) # or bug
 
+def applydemorgan(cpm_expr):
+    new_expr_list = []
+    for expr in cpm_expr:
+        if isinstance(expr, Operator) and all(__is_flat_var_or_list(arg) for arg in expr.args):
+            if expr.name in {"or", "and"} and all(type(arg) == NegBoolView for arg in expr.args):
+                newexpr = copy.copy(expr)
+                newexpr.name = "or" if expr.name == "and" else "and"
+                newexpr.args = [~a for a in expr.args]
+                newexpr = ~newexpr
+                new_expr_list.append(newexpr)
+            else:
+                new_expr_list.append(expr)
+        else:
+            new_expr_list.append(expr)
+    return new_expr_list
