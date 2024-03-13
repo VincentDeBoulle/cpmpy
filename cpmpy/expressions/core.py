@@ -259,9 +259,30 @@ class Expression(object):
     # Mathematical Operators, including 'r'everse if it exists
     # Addition
     def __add__(self, other):
+        neg_other = self.get_negation(other)
+        if isinstance(self, Operator):
+            if len(self.args) == 1 and str(self) == str(neg_other):
+                return 0
+            if str(neg_other) in map(str, self.args):
+                self.args = [a for a in self.args if str(neg_other) != str(a)]
+                if not self.args:
+                    return 0
+                elif len(self.args) == 1:
+                    return self.args[0]
+                return self
+        elif str(neg_other) == str(self) and type(neg_other) == type(self):
+            return 0
+        
         if is_num(other) and other == 0:
             return self
         return Operator("sum", [self, other])
+
+    # Returns the negation of a variable
+    def get_negation(self, variable):
+        if isinstance(variable, Operator):
+            if variable.name == '-':
+                return variable.args[0]
+        return Operator('-', [variable])
 
     def __radd__(self, other):
         if is_num(other) and other == 0:
@@ -313,6 +334,8 @@ class Expression(object):
     def __floordiv__(self, other):
         if is_num(other) and other == 1:
             return self
+        if str(self) == str(other) and type(self) == type(other):
+            return 1
         return Operator("div", [self, other])
 
     def __rfloordiv__(self, other):
