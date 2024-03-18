@@ -53,6 +53,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor.title = 'Results of the Auto Correlation problem'
 
     for length in range(10, 20):
+        print(length)
 
         # Set a random seed for reproducibility reasons
         random.seed(0)
