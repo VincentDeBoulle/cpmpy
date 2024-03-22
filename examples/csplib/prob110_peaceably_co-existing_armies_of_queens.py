@@ -59,7 +59,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Board size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the Peaceably Co-existing Armies of Queens problem'
         
-    for sz in range(4, 11):
+    for sz in range(4, 9):
 
         # Set a random seed for reproducibility reasons
         random.seed(0)

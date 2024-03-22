@@ -1,8 +1,8 @@
 import subprocess
 
 files = [
-    "examples/csplib/prob002_template_design.py",
-    "examples/csplib/prob005_auto_correlation.py",
+    #"examples/csplib/prob002_template_design.py",
+    #"examples/csplib/prob005_auto_correlation.py",
     "examples/csplib/prob006_golomb.py",
     "examples/csplib/prob007_all_interval.py",
     "examples/csplib/prob008_vessel_loading.py",

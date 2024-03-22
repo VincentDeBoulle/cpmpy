@@ -51,7 +51,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Length of Sequence', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'number of search branches', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the Hadamard matrix problem' 
 
-    for lngth in range(19, 35, 2):
+    for lngth in range(15, 26, 2):
 
         # Set a random seed for reproducibility reasons
         random.seed(0)
