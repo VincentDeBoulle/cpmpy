@@ -172,7 +172,7 @@ class CPM_z3(SolverInterface):
             for cpm_var in self.user_vars:
                 cpm_var._value = None # XXX, maybe all solvers should do this...
 
-        return has_sol
+        return has_sol, 0
 
 
     def solver_var(self, cpm_var):

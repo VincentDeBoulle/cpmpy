@@ -47,7 +47,7 @@ if __name__ == "__main__":
             model_creation_time = timeit.default_timer() - start_model_time
             return model.solve(solver=slvr, time_limit=30), model_creation_time
 
-        for slvr in ["ortools", "ortools_CSE"]:
+        for slvr in ["ortools", "ortools_CSE", "z3"]:
             total_model_creation_time = []
             total_transform_time = []
             total_solve_time = []
