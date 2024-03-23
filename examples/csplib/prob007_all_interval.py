@@ -74,7 +74,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor = PrettyTable(['Length', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the All Interval problem'
 
-    for lngth in range(15, 30):
+    for lngth in range(5, 30):
 
         # Set a random seed for reproducibility reasons
         random.seed(0)
