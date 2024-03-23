@@ -29,6 +29,7 @@ from .z3 import CPM_z3
 from .pysdd import CPM_pysdd
 from .exact import CPM_exact
 from .ortools_2 import CPM_ortools_2
+from .z3_2 import CPM_z3_2
 
 def param_combinations(all_params, remaining_keys=None, cur_params=None):
     """
@@ -77,7 +78,8 @@ class SolverLookup():
                 ("pysat", CPM_pysat),
                 ("pysdd", CPM_pysdd),
                 ("exact", CPM_exact),
-                ("ortools_2", CPM_ortools_2)
+                ("ortools_2", CPM_ortools_2),
+                ("z3_2", CPM_z3_2)
                ]
 
     @staticmethod

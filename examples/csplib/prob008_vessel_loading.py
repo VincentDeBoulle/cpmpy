@@ -86,11 +86,11 @@ if __name__ == "__main__":
     
     problem_names = [problem['name'] for problem in data]
 
-    tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches', 'Overall Memory Usage (Bytes)'])
+    tablesp_ortools =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools.title = 'Results of the Car Sequence problem without CSE'
-    tablesp_ortools_CSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches', 'Overall Memory Usage (Bytes)'])
+    tablesp_ortools_CSE =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_CSE.title = 'Results of the Car Sequence problem with CSE'
-    tablesp_ortools_factor =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Branches', 'Overall Memory Usage (Bytes)'])
+    tablesp_ortools_factor =  PrettyTable(['Problem Name', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the Car Sequence problem'
 
     for name in problem_names:
@@ -129,12 +129,12 @@ if __name__ == "__main__":
             
             model_creation_time = timeit.default_timer() - start_model_time
             
-            ret, transform_time, solve_time, num_branches = model.solve(solver=slvr, time_limit=20)
+            ret, transform_time, solve_time = model.solve(solver=slvr, time_limit=20)
 
             # solve the model
             if ret:
                 print("Solved this problem")
-                return model_creation_time, transform_time, solve_time, num_branches
+                return model_creation_time, transform_time, solve_time
                 
             elif model.status().runtime > 19:
                 print("This problem passes the time limit")
@@ -143,7 +143,7 @@ if __name__ == "__main__":
                 print("Model is unsatisfiable!")
                 return 404, 404, 404, 404
             
-        for slvr in ["ortools", "ortools_2"]:
+        for slvr in ["z3", "z3_2"]:
             
             # Set random seed for same random conditions in both iterations
             random.seed(0)
@@ -152,7 +152,6 @@ if __name__ == "__main__":
             total_transform_time = []
             total_solve_time = []
             total_execution_time = []
-            total_num_branches = []
             total_mem_usage = []
 
             for lp in range(nb_iterations):
@@ -162,7 +161,7 @@ if __name__ == "__main__":
                 initial_memory = psutil.Process().memory_info().rss
                 start_time = timeit.default_timer()
                 
-                model_creation_time,transform_time, solve_time, num_branches = run_code(slvr)
+                model_creation_time,transform_time, solve_time = run_code(slvr)
                 
                 execution_time = timeit.default_timer() - start_time
                 memory_usage = psutil.Process().memory_info().rss - initial_memory
@@ -171,35 +170,32 @@ if __name__ == "__main__":
                 total_transform_time.append(transform_time)
                 total_solve_time.append(solve_time)
                 total_execution_time.append(execution_time)
-                total_num_branches.append(num_branches)
                 total_mem_usage.append(memory_usage)
 
                 # Re-enable garbage collection
                 gc.enable()
 
-            if slvr == 'ortools':
+            if slvr == 'z3':
                 average_model_creation_time = sum(total_model_creation_time) / nb_iterations 
                 average_transform_time = sum(total_transform_time) / nb_iterations
                 average_solve_time = sum(total_solve_time) / nb_iterations 
                 average_execution_time = sum(total_execution_time) / nb_iterations 
-                average_num_branches = sum(total_num_branches) / nb_iterations 
                 average_mem_usage = sum(total_mem_usage) / nb_iterations 
 
-                tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_num_branches, average_mem_usage])
-                with open("cpmpy/timing_results/vessel_loading.txt", "w") as f:
+                tablesp_ortools.add_row([name, average_model_creation_time, average_transform_time, average_solve_time, average_execution_time, average_mem_usage])
+                with open("cpmpy/timing_results/vessel_loading_z3.txt", "w") as f:
                     f.write(str(tablesp_ortools))
                     f.write("\n")
 
-            elif slvr == 'ortools_2':
+            elif slvr == 'z3_2':
                 average_model_creation_time_2 = sum(total_model_creation_time) / nb_iterations
                 average_transform_time_2 = sum(total_transform_time) / nb_iterations
                 average_solve_time_2 = sum(total_solve_time) / nb_iterations
                 average_execution_time_2 = sum(total_execution_time) / nb_iterations 
-                average_num_branches_2 = sum(total_num_branches) / nb_iterations
                 average_mem_usage_2 = sum(total_mem_usage) / nb_iterations
 
-                tablesp_ortools_CSE.add_row([name, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2, average_mem_usage_2])
-                with open("cpmpy/timing_results/vessel_loading_CSE.txt", "w") as f:
+                tablesp_ortools_CSE.add_row([name, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_mem_usage_2])
+                with open("cpmpy/timing_results/vessel_loading_z3_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_CSE))
                     f.write("\n")
 
@@ -207,10 +203,9 @@ if __name__ == "__main__":
                 factor_tranform_time = average_transform_time / average_transform_time_2
                 factor_solve_time = average_solve_time / average_solve_time_2
                 factor_execution_time = average_execution_time / average_execution_time_2
-                factor_num_branches = average_num_branches / average_num_branches_2
                 factor_mem_usage = average_mem_usage / average_mem_usage_2
 
-                tablesp_ortools_factor.add_row([name, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_num_branches, factor_mem_usage])
-                with open("cpmpy/CSE_results/vessel_loading.txt", "w") as f:
+                tablesp_ortools_factor.add_row([name, factor_model_creation_time, factor_tranform_time, factor_solve_time, factor_execution_time, factor_mem_usage])
+                with open("cpmpy/CSE_results/vessel_loading_z3.txt", "w") as f:
                     f.write(str(tablesp_ortools_factor))
                     f.write("\n")
