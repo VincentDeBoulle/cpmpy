@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 average_num_branches_2 = sum(total_num_branches) / nb_iterations
 
                 tablesp_ortools_CSE.add_row([n, average_model_creation_time_2, average_transform_time_2, average_solve_time_2, average_execution_time_2, average_num_branches_2])
-                with open("cpmpy/timing_results/duplicates.txt", "w") as f:
+                with open("cpmpy/timing_results/duplicates_CSE.txt", "w") as f:
                     f.write(str(tablesp_ortools_CSE))
                     f.write("\n")
 
