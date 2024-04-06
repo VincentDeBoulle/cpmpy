@@ -23,7 +23,7 @@ def knights_tour(n):
 
 if __name__ == "__main__":
 
-    nb_iterations = 10
+    nb_iterations = 1
 
     tablesp_ortools =  PrettyTable(['Size of n', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time'])
     tablesp_ortools.title = 'Results of the Knights Tour problem without CSE'
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor.title = 'Results of the Knights Tour problem'
 
 
-    for n in range(100, 1501, 100):
+    for n in range(5, 6, 100):
 
         def run_code(slvr):
             start_model_time = timeit.default_timer()
