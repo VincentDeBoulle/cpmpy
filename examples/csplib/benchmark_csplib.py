@@ -1,9 +1,6 @@
 import subprocess
 
 files = [
-    "examples/csplib/prob002_template_design.py",
-    "examples/csplib/prob005_auto_correlation.py",
-    "examples/csplib/prob006_golomb.py",
     "examples/csplib/prob007_all_interval.py",
     "examples/csplib/prob008_vessel_loading.py",
     "examples/csplib/prob009_perfect_squares.py",
@@ -15,7 +12,6 @@ files = [
     "examples/csplib/prob054_n_queens.py",
     "examples/csplib/prob076_costas_arrays.py",
     "examples/csplib/prob084_hadamard_matrix.py",
-    "examples/csplib/prob110_peaceably_co-existing_armies_of_queens.py",
 ]
 
 for file_name in files:
