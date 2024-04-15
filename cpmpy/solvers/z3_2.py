@@ -251,9 +251,7 @@ class CPM_z3_2(SolverInterface):
         cpm_cons = toplevel_list(cpm_expr)
         supported = {"alldifferent", "xor", "ite"}  # z3 accepts these reified too
         cpm_cons = decompose_in_tree(cpm_cons, supported, supported)
-        print(cpm_cons)
         cpm_cons = apply_CSE(cpm_cons, expr_dict = self.expr_dict)
-        print(cpm_cons)
         return cpm_cons
 
     def __add__(self, cpm_expr):

@@ -33,7 +33,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor.title = 'Results of the Knights Tour problem'
 
 
-    for n in range(5, 6, 100):
+    for n in range(100, 1501, 100):
 
         def run_code(slvr):
             start_model_time = timeit.default_timer()
