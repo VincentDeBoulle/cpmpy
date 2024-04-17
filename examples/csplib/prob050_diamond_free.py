@@ -99,7 +99,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Size of diamond', 'Number of Solutions', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the Diamond Free problem'    
 
-    for nb in range(10, 21):
+    for nb in range(10, 20):
 
         # Set a random seed for reproducibility reasons
         random.seed(0)

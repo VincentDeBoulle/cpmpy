@@ -62,7 +62,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Amount of numbers to partition', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the Number Partitioning problem'    
 
-    for nb in range(10,30,2):
+    for nb in range(10,23,2):
 
         # Set a random seed for reproducibility reasons
         random.seed(0)

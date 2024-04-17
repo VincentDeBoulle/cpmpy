@@ -98,7 +98,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor =  PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'Results of the Costas Arrays problem'
 
-    for sz in range(5, 15):
+    for sz in range(5, 14):
 
         # Set a random seed for reproducibility reasons
         random.seed(0)
