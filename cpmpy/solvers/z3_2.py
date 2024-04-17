@@ -20,6 +20,7 @@
 
         CPM_z3
 """
+from cpmpy.transformations.CSE_transformations import remove_redundant
 from cpmpy.transformations.Common_subexpression_elimination import apply_CSE
 from .solver_interface import SolverInterface, SolverStatus, ExitStatus
 from ..exceptions import NotSupportedError
@@ -251,6 +252,7 @@ class CPM_z3_2(SolverInterface):
         cpm_cons = toplevel_list(cpm_expr)
         supported = {"alldifferent", "xor", "ite"}  # z3 accepts these reified too
         cpm_cons = decompose_in_tree(cpm_cons, supported, supported)
+        cpm_cons = remove_redundant(cpm_cons)
         cpm_cons = apply_CSE(cpm_cons, expr_dict = self.expr_dict)
         return cpm_cons
 
