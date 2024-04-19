@@ -336,7 +336,6 @@ class CPM_ortools(SolverInterface):
         cpm_cons = only_bv_reifies(cpm_cons)
         cpm_cons = only_implies(cpm_cons)  # everything that can create
                                              # reified expr must go before this
-        print(len(cpm_cons))
         return cpm_cons
 
     def __add__(self, cpm_expr):
