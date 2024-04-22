@@ -67,7 +67,7 @@ if __name__ == "__main__":
     tablesp_ortools_factor = PrettyTable(['Size', 'Model Creation Time', 'Solver Creation + Transform Time', 'Solve Time', 'Overall Execution Time', 'Number of Search Branches', 'Overall Memory Usage (Bytes)'])
     tablesp_ortools_factor.title = 'OR-Tools: Results of the Golomb problem'
 
-    for sz in range(10, 26):
+    for sz in range(8, 12):
 
         # Set a random seed for reproducibility reasons
         random.seed(0)
