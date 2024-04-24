@@ -26,7 +26,7 @@
 import sys  # for stdout checking
 import numpy as np
 
-from cpmpy.transformations.CSE_transformations import remove_redundant
+from cpmpy.transformations.CSE_transformations import applydemorgan, remove_redundant
 
 from .solver_interface import SolverInterface, SolverStatus, ExitStatus
 from ..exceptions import NotSupportedError
@@ -329,7 +329,8 @@ class CPM_ortools_CSE(SolverInterface):
 
         :return: list of Expression
         """
-        cpm_cons = toplevel_list(cpm_expr)
+        cpm_cons = applydemorgan(cpm_expr)
+        cpm_cons = toplevel_list(cpm_cons)
         supported = {"min", "max", "abs", "element", "alldifferent", "xor", "table", "cumulative", "circuit", "inverse"}
         cpm_cons = decompose_in_tree(cpm_cons, supported)
         cpm_cons = remove_redundant(cpm_cons)
